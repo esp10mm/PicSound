@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PicSound</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+<script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+<script>
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1457989084469519',
+      cookie     : true,  // enable cookies to allow the server to access
+                          // the session
+      xfbml      : true,  // parse social plugins on this page
+      version    : 'v2.0' // use version 2.0
+    });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  function loginFB(){
+    FB.login(function(response) {
+     if (response.authResponse) {
+       console.log('Welcome!  Fetching your information.... ');
+       FB.api('/me', function(response) {
+         $.get("/register",response,function(res){
+           var access_token =   FB.getAuthResponse()['accessToken'];
+           if(res.login){
+             window.location = "/albums?user=" + response.id + "&token=" + access_token;
+            // window.location = "/albums?user=" + response.query.id;
+           }
+         })
+       });
+     } else {
+       console.log('User cancelled login or did not fully authorize.');
+     }
+   }, {scope: 'email,user_photos'});
+  }
+
+
+</script>
+
+<input type ='button' onclick="loginFB();" value="Login with Facebook"></input><br>
+
+
+</body>
+</html>
