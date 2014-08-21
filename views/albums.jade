@@ -32,7 +32,6 @@ html(lang="en")
         document.getElementById('loading').src = "/fonts/loading.gif";
         $.get("/importAlbum",{album:selected,token:token},function(res){
           var success_flag = false;
-          document.getElementById('loading').src = "";
           setTimeout(
             function(){
               if(!success_flag)
@@ -43,10 +42,12 @@ html(lang="en")
           if(res.error == null){
             loadAlbumList();
             success_flag = true;
+            document.getElementById('loading').src = "";
           }
           else{
             success_flag = true;
             document.getElementById('import_msg').innerHTML = res.error;
+            document.getElementById('loading').src = "";
             console.log(res.error);
           }
         });
