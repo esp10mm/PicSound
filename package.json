@@ -3,6 +3,11 @@
   "version" : "0.0.1",
   "dependencies" : {
     "express" : "*" ,
-    "async" : "*"
+    "async" : "*" ,
+    "fb" : "*" ,
+    "request" : "*" ,
+    "jade" : "*" ,
+    "mongodb" : "*" ,
+    "gridfs-stream" : "*"
   }
 }
