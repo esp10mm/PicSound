@@ -181,28 +181,21 @@ app.get('/importAlbum',function(req,res){
 		//console.log(response);
 		MongoClient.connect(dbpath, function(err, db) {
 
-			//register album data to user
-			var users = db.collection('users');
-			users.findOne({id:response.from.id},function(err,doc){
-				var import_or_not = true;
-				if(!(doc.albums===undefined)){
-					if(doc.albums.indexOf(response.id)!=(-1))
-						import_or_not = false;
-				}
-				if(import_or_not){
-					users.findAndModify(
-						{id:response.from.id},
-						[['id',1]],
-						{$push:{albums:{id:response.id,name:response.name}}},
-						function(){}
-					);
-				}
-			})
-
 			//register album data & save photos to gridfs
 			var albums = db.collection('albums');
 			albums.findOne({id:response.id},function(err,doc){
 				if(doc==null){
+					//register album data to user
+					var users = db.collection('users');
+					users.findOne({id:response.from.id},function(err,doc){
+						users.findAndModify(
+							{id:response.from.id},
+							[['id',1]],
+							{$push:{albums:{id:response.id,name:response.name}}},
+							function(){}
+						);
+					})
+					//register album data
 					albums.insert(
 						{
 							id:response.id,
@@ -222,36 +215,40 @@ app.get('/importAlbum',function(req,res){
 								);
 							}
 							console.log("album is registered : " + response.id);
+
+							//save photos to gridfs
+							var gfs = Grid(db, mongo);
+							albums.findOne({id:response.id},function(err,doc){
+								if(!(doc==null)){
+										async.each(response.photos.data,
+											function(image,callback){
+												var save_to_mongo = request(image.source).pipe(gfs.createWriteStream({
+													filename: image.id + ".jpg",
+													metadata:{
+														id:image.id,
+														user:response.from.id,
+														album:response.id
+													}
+												}));
+												save_to_mongo.on('close', function(){
+													console.log(image.id + "is saved !")
+													callback();
+												});
+												console.log(image.id);
+											},
+											function(err){
+												res.send({id:response.id,name:response.name});
+												console.log("DONE!");
+											}
+										);
+								}
+							});//save photos to gridfs
 						}
 					);
-
-					//save photos to gridfs
-					var gfs = Grid(db, mongo);
-					albums.findOne({id:response.id},function(err,doc){
-						if(!(doc==null)){
-								async.each(response.photos.data,
-									function(image,callback){
-										var save_to_mongo = request(image.source).pipe(gfs.createWriteStream({
-											filename: image.id + ".jpg",
-											metadata:{
-												id:image.id,
-												user:response.from.id,
-												album:response.id
-											}
-										}));
-										save_to_mongo.on('close', function(){
-											console.log(image.id + "is saved !")
-											callback();
-										});
-										console.log(image.id);
-									},
-									function(err){
-										res.send({id:response.id,name:response.name});
-										console.log("DONE!");
-									}
-								);
-						}
-					});
+				}
+				else{
+					res.send({error:"This album already exists !"});
+					console.log("Album already exists : " + response.id);
 				}
 			});
 

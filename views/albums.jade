@@ -8,6 +8,8 @@ html(lang="en")
     h1 Import Album From Facebook :
     select(id='albumList')
     input(type='button' value='Import This !' onclick='importAlbum()')
+    img(id='loading')
+    div(id='import_msg')
     br
     h1 Your Albums :
     div(id='albums')
@@ -25,9 +27,17 @@ html(lang="en")
       loadAlbumList();
 
       function importAlbum(){
-        var selected = document.getElementById('albumList').value;
+        document.getElementById('import_msg').innerHTML = "";
+        var selected = document.getElementById('albumList').value; 
+        document.getElementById('loading').src = "/fonts/loading.gif";
         $.get("/importAlbum",{album:selected,token:token},function(res){
-          loadAlbumList();
+          document.getElementById('loading').src = "";
+          if(res.error == null)
+            loadAlbumList();
+          else{
+            document.getElementById('import_msg').innerHTML = res.error;
+            console.log(res.error);
+          }
         });
       }
 
