@@ -12,6 +12,8 @@ var MongoClient = require('mongodb').MongoClient;
 var Grid = require('gridfs-stream');
 
 
+var dbpath = "mongodb://114.32.80.151:27017/PicSound";
+
 app.use(express.static(__dirname));
 var echonest_key = 'GESA37AURYYE1CO55';
 
@@ -107,7 +109,7 @@ app.get('/flickrAlbum',function(req,response){
 
 app.get('/loadFAlbum',function(req,response){
 	//console.log(req);
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		if(!err) {
 			console.log("We are connected");
 		}
@@ -137,7 +139,7 @@ app.get('/loadFAlbum',function(req,response){
 })
 
 app.get('/image',function(req,response){
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var gfs = Grid(db, mongo);
 		var readstream = gfs.createReadStream({
 			filename: req.query.id + '.jpg'
@@ -150,7 +152,7 @@ app.get('/albums',function(req,res){
 	//var doc = fs.readFileSync( './views/albums.jade','utf-8' );
 	var fb_token = req.query.token;
 	FB.api('me', { fields: ['id','albums'], access_token: fb_token }, function(response) {
-		MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+		MongoClient.connect(dbpath, function(err, db) {
 			var users = db.collection('users');
 			users.findOne({id:response.id},function(err,doc){
 					var albums = [];
@@ -177,7 +179,7 @@ app.get('/importAlbum',function(req,res){
 	var fb_token = req.query.token;
 	FB.api(req.query.album,{fields:["id","name","from","photos"],access_token: fb_token},function(response){
 		//console.log(response);
-		MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+		MongoClient.connect(dbpath, function(err, db) {
 
 			//register album data to user
 			var users = db.collection('users');
@@ -260,7 +262,7 @@ app.get('/importAlbum',function(req,res){
 })
 
 app.get('/album',function(req,res){
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var albums = db.collection('albums');
 		albums.findOne({id:req.query.id},function(err,doc){
 			var options = {};
@@ -279,7 +281,7 @@ app.get('/album',function(req,res){
 
 app.get('/addTag',function(req,res){
 	//console.log(req.query);
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var albums = db.collection('albums');
 		albums.findOne({id:req.query.id},function(err,doc){
 			var add_or_not = true;
@@ -328,7 +330,7 @@ app.get('/addTag',function(req,res){
 })
 
 app.get('/getTags',function(req,res){
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var albums = db.collection('albums');
 		albums.findOne({id:req.query.id},function(err,doc){
 			var tags = [];
@@ -358,7 +360,7 @@ app.get('/echonest',function(req,res){
 })
 
 app.get('/getRecSong',function(req,res){
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var albums = db.collection('albums');
 		albums.findOne({id:req.query.id},function(err,doc){
 			var tags = [];
@@ -403,7 +405,7 @@ app.get('/getRecSong',function(req,res){
 })
 
 app.get('/getAlbumList',function(req,res){
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var users = db.collection('users');
 		users.findOne({id:req.query.id},function(err,doc){
 			var albums = [];
@@ -416,7 +418,7 @@ app.get('/getAlbumList',function(req,res){
 })
 
 app.get('/register',function(req,response){
-	MongoClient.connect("mongodb://localhost:27017/PicSound", function(err, db) {
+	MongoClient.connect(dbpath, function(err, db) {
 		var collection = db.collection('users');
 		/*collection.insert(req.query,function(err,result){
 			console.log("insert done");
