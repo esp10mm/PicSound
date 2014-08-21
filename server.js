@@ -1,6 +1,5 @@
 var express = require('express');
 var app = express();
-var songSearch = require("./song_search.js")
 var http = require('http');
 var https = require('https');
 var async = require('async');
