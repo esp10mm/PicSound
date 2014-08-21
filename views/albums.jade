@@ -28,13 +28,24 @@ html(lang="en")
 
       function importAlbum(){
         document.getElementById('import_msg').innerHTML = "";
-        var selected = document.getElementById('albumList').value; 
+        var selected = document.getElementById('albumList').value;
         document.getElementById('loading').src = "/fonts/loading.gif";
         $.get("/importAlbum",{album:selected,token:token},function(res){
+          var success_flag = false;
           document.getElementById('loading').src = "";
-          if(res.error == null)
+          setTimeout(
+            function(){
+              if(!success_flag)
+                document.getElementById('import_msg').innerHTML = "Server didnt response !";
+            }
+            , 3000
+          );
+          if(res.error == null){
             loadAlbumList();
+            success_flag = true;
+          }
           else{
+            success_flag = true;
             document.getElementById('import_msg').innerHTML = res.error;
             console.log(res.error);
           }
