@@ -12,9 +12,9 @@ var MongoClient = require('mongodb').MongoClient;
 var Grid = require('gridfs-stream');
 
 
-var dbpath = "mongodb://114.32.80.151:27017/PicSound";
+var dbpath = "mongodb://picsound:526752@114.32.80.151:27017/PicSound";
 
-app.use(express.static(__dirname));
+app.use(express.static(__dirname+"/public"));
 var echonest_key = 'GESA37AURYYE1CO55';
 
 app.listen(process.env.PORT || 80);
@@ -149,7 +149,7 @@ app.get('/image',function(req,response){
 })
 
 app.get('/albums',function(req,res){
-	//var doc = fs.readFileSync( './views/albums.jade','utf-8' );
+	//var doc = fs.readFileSync( './public/views/albums.jade','utf-8' );
 	var fb_token = req.query.token;
 	FB.api('me', { fields: ['id','albums'], access_token: fb_token }, function(response) {
 		MongoClient.connect(dbpath, function(err, db) {
@@ -168,7 +168,7 @@ app.get('/albums',function(req,res){
 							token:fb_token
 						}
 					};
-					var html = jade.renderFile('./views/albums.jade', options);
+					var html = jade.renderFile('./public/views/albums.jade', options);
 					res.send(html);
 			})
 		});
@@ -269,7 +269,7 @@ app.get('/album',function(req,res){
 					photos:doc.photos
 				}
 			}
-			var html = jade.renderFile('./views/album.jade', options);
+			var html = jade.renderFile('./public/views/album.jade', options);
 			res.send(html);
 		})
 	})
