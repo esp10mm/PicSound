@@ -1,0 +1,68 @@
+doctype html
+html(lang="en")
+  head
+    title Albums
+  body
+
+    div(id="userinfo",user=data.user.id)
+    h1 Import Album From Facebook :
+    select(id='albumList')
+    input(type='button' value='Import This !' onclick='importAlbum()')
+    img(id='loading')
+    div(id='import_msg')
+    br
+    h1 Your Albums :
+    div(id='albums')
+
+    script(type="text/javascript",src="//code.jquery.com/jquery-1.11.0.min.js")
+    script.
+      var albumsOptions ="";
+      var fb_albums= !{JSON.stringify(data.albums_option)};
+      var token= !{JSON.stringify(data.token)}
+      for(var k in fb_albums){
+        albumsOptions = albumsOptions + "<option value=\"" + fb_albums[k].id + "\">" + fb_albums[k].name + "</option>";
+      }
+      document.getElementById('albumList').innerHTML = albumsOptions;
+
+      loadAlbumList();
+
+      function importAlbum(){
+        document.getElementById('import_msg').innerHTML = "";
+        var selected = document.getElementById('albumList').value;
+        document.getElementById('loading').src = "/fonts/loading.gif";
+        $.get("/importAlbum",{album:selected,token:token},function(res){
+          var success_flag = false;
+          setTimeout(
+            function(){
+              if(!success_flag)
+                document.getElementById('import_msg').innerHTML = "Server didnt response !";
+            }
+            , 3000
+          );
+          if(res.error == null){
+            loadAlbumList();
+            success_flag = true;
+            document.getElementById('loading').src = "";
+          }
+          else{
+            success_flag = true;
+            document.getElementById('import_msg').innerHTML = res.error;
+            document.getElementById('loading').src = "";
+            console.log(res.error);
+          }
+        });
+      }
+
+      function loadAlbumList(){
+        $.get("/getAlbumList",{id:!{JSON.stringify(data.user.id)}},function(res){
+          var albumsHTML = "";
+          if(res.length>0){
+            for(var k in res){
+              albumsHTML = albumsHTML + "<a href='/album?id=" + res[k].id + "'>" + res[k].name + "</a><br>";
+            }
+            document.getElementById('albums').innerHTML = albumsHTML;
+          }
+          else
+            document.getElementById('albums').innerHTML = "You have no album yet !";
+        });
+      }

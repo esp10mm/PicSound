@@ -1,0 +1,94 @@
+doctype html
+html(lang="en")
+  head
+    title Album
+    link(rel="stylesheet" href="flexslider.css" type="text/css")
+    style.
+      .flexslider {
+        width: 50%;
+        height: auto;
+        margin-top: 20px;
+        margin-right: 3%;
+        float: right;
+      }
+      .flexslider .slides img {
+        display: block;
+        max-width: 50%;
+        height: auto;
+        margin-right: auto;
+        margin-bottom: 10px;
+        margin-left: auto;
+        margin-top:10px;
+      }
+
+      #side {
+        float: left;
+        width: 40%;
+        margin-left: 3%;
+        height: auto;
+      }
+
+
+  body
+    div(class='flexslider')
+      ul(class='slides',id="slides")
+    div(id='side')
+      h1 Add Tags To This Album :
+      input(type='textbox',id='newTag')
+      input(type='button',value='add',onclick='addNewTag()')
+      h1 Album Tags :
+      div(id='tags')
+      h1 Recommend Songs :
+      div(id='rec_song')
+        div(id='rec_song_msg')
+        iframe(id='spotify',width="300",height="300",frameborder="0",allowtransparency="true")
+    script(type="text/javascript",src="//code.jquery.com/jquery-1.11.0.min.js")
+    script(type="text/javascript",src="/jquery.flexslider-min.js")
+    script.
+      var photos = !{JSON.stringify(photos)};
+      readTags();
+      loadRecSong();
+      var slideHTML = ""
+      for(var k in photos){
+        slideHTML += "<li><img id='slide' src='/image?id=" + photos[k] + "'></li>"
+      }
+      document.getElementById('slides').innerHTML = slideHTML;
+
+      $('.flexslider').flexslider({
+        animation: "slide"
+      });
+
+      function addNewTag(){
+        var tag = document.getElementById('newTag').value;
+        $.get("/addTag",{id:!{JSON.stringify(id)},tag:tag},function(res){
+          if(res.success){
+            readTags();
+            loadRecSong();
+          }
+        });
+
+      }
+
+      function readTags(){
+        $.get("/getTags",{id:!{JSON.stringify(id)}},function(res){
+            if(res.length == 0)
+              document.getElementById('tags').innerHTML = "This album has no tags yet !";
+            else
+              document.getElementById('tags').innerHTML = res;
+        })
+      }
+
+      function loadRecSong(){
+        $.get("/getRecSong",{id:!{JSON.stringify(id)}},function(res){
+            console.log(res);
+            if(res.length > 0){
+              var uri = "https://embed.spotify.com/?uri=spotify:trackset:" + res
+              document.getElementById('spotify').src = uri;
+              document.getElementById('rec_song_msg').innerText = "";
+            }
+            else {
+              document.getElementById('rec_song_msg').innerText = "This album has no recommend song yet !";
+            }
+
+        })
+      }
