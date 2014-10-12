@@ -1,0 +1,216 @@
+doctype html
+html
+  head
+    title Albums
+    meta(charset='utf-8')
+    link(href=href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css')
+    link(href="css/semantic.css" rel="stylesheet" type="text/css")
+    style.
+      body{
+        background-color: #dedede;
+        font-family: 'Varela Round', sans-serif;
+      }
+
+      .ui.main.menu{
+        top: 0px;
+        margin-top: 0px;
+        width: 100%;
+        left: 0px;
+        position: fixed;
+      }
+
+      .right.menu{
+        display: inline;
+      }
+
+      .ui.main.segment{
+        background-color: #dedede;
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        left: 0px;
+        z-index: -1;
+      }
+
+      .ui.side.menu{
+        left: 2%;
+        width: 13%;
+        margin-top: 15px;
+      }
+
+      .ui.disp.segment{
+        width: 86%;
+        margin-top: 15px;
+        max-height: 90%;
+      }
+
+      .ui.items{
+        max-height: 90%;
+      }
+
+
+      #fbloading{
+        display: inline;
+      }
+
+  body
+    div(class="ui inverted main menu")
+      a(class="item" href="/")
+        i(class="home icon")
+        |Home
+      a(class="item")
+        i(class="photo icon")
+        |Albums
+      a(class="item")
+        i(class="globe icon")
+        |Browse
+      div(class="right menu")
+        div(class="item")
+          div(class="ui icon input")
+            input(type="text" placeholder="Search...")
+            i(class="search link icon")
+
+    div(class="ui main segment")
+      div(class="ui left floated vertical side menu")
+        div(class="header item")
+          i(class="add icon")
+          |Add
+        a(class="item" onclick="importFromFBDisp()")
+          i(class="facebook icon")
+          |Import from Facebook
+        div(class="header item")
+          i(class="pencil icon")
+          |Manage
+        a(class="item")
+          i(class="trash icon")
+          |Delete
+      div(class="ui right floated stacked disp segment",id="main_disp")
+
+      div(class="ui importFB modal")
+        i(class="close icon")
+        div(class="header")
+          |Import Album From Facebook :
+        div(class="content")
+          div(class="ui dropdown fb selection")
+            div(class="default text")
+              |Choose an album from your facebook
+            i(class="dropdown icon")
+            div(class="menu" id="fb_options")
+          | &nbsp; &nbsp; &nbsp;
+          div(class="ui button" onclick="importFromFB()")
+            |Import
+          | &nbsp; &nbsp; &nbsp;
+          div(id="fbloading")
+        div(class="actions")
+          div(class="ui button")
+            |Cancel
+
+      div(class="ui msg modal")
+        i(class="close icon")
+        div(class="header",id="msg_header")
+        div(class="content",id="msg_content")
+        div(class="actions")
+          div(class="ui button")
+            |Okay
+
+
+  div(id="userinfo" user=data.user.id)
+
+  script(src="//code.jquery.com/jquery-1.11.0.min.js" type="text/javascript")
+  script(src="javascript/semantic.js" type="text/javascript")
+  script.
+
+      var fb_albums= !{JSON.stringify(data.albums_option)};
+      var token= !{JSON.stringify(data.token)};
+
+      loadAlbums();
+
+      for(var k in fb_albums){
+        document.getElementById('fb_options').innerHTML += '<div class="item" data-value="'+fb_albums[k].id+'">'+fb_albums[k].name+'</div>';
+      }
+
+      $('.ui.modal')
+        .modal()
+      ;
+
+      $('.ui.selection.dropdown')
+        .dropdown()
+      ;
+
+      function importFromFBDisp(){
+        $('.importFB.modal')
+          .modal('setting', 'transition', "horizontal flip")
+          .modal('show')
+        ;
+      }
+
+      function importFromFB(){
+        var selected = $('.ui.selection.dropdown.fb').dropdown('get value');
+        document.getElementById('fbloading').innerHTML = "<i class='big loading icon'></i>";
+        $.get("/importAlbum",{album:selected,token:token},function(res){
+          var success_flag = false;
+          setTimeout(
+            function(){
+              if(!success_flag){
+                  document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
+                  document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='frown icon'></i>Sorry ... something went wrong</div>";
+
+                  $('.msg.modal')
+                    .modal('setting', 'transition', "horizontal flip")
+                    .modal('show')
+                    .modal('hide others')
+                  ;
+
+                  document.getElementById('fbloading').innerHTML = "";
+              }
+            }
+            , 30000
+          );
+          if(res.error == null){
+            //loadAlbumList();
+            success_flag = true;
+            document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
+            document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='smile icon'></i>Succeeded !</div>";
+            document.getElementById('fbloading').innerHTML = "";
+
+            $('.msg.modal')
+              .modal('setting', 'transition', "horizontal flip")
+              .modal('show')
+              .modal('hide others')
+            ;
+
+            loadAlbums();
+
+          }
+          else{
+            success_flag = true;
+            document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
+            document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='frown icon'></i>"+res.error+"</div>";
+            document.getElementById('fbloading').innerHTML = "";
+
+            $('.msg.modal')
+              .modal('setting', 'transition', "horizontal flip")
+              .modal('show')
+              .modal('hide others')
+            ;
+
+
+          }
+        });
+      }
+
+      function loadAlbums(){
+        $.get("/getAlbumList",{id:!{JSON.stringify(data.user.id)}},function(res){
+          var albumsHTML = "<div class='ui items'>";
+          if(res.length>0){
+            for(var k in res){
+              albumsHTML = albumsHTML + "<div class='item' onclick='window.location = \"/album?id="+res[k].id+"\";'><div class='image'><img class='cover_photo' src='/image?id="+res[k].cover_photo+"'></div><div class='content'><div class='ui header'>"+res[k].name+"</div></div></div>";
+              console.log(res[k].id);
+            }
+            albumsHTML+= "</div>";
+            document.getElementById('main_disp').innerHTML = albumsHTML;
+          }
+          else
+            document.getElementById('main_disp').innerHTML = '<div class="ui icon message"><i class="frown icon"></i><div class="content"><div class="header">You have no album yet ...</div><p>You can add some with sidebar!</p></div></div>';
+        });
+      }

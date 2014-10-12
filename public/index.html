@@ -1,57 +1,147 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
-  <title>PicSound</title>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <title>PicSound</title>
+ 
+  <link href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
+  <link href="css/semantic.css" rel="stylesheet" type="text/css" />
+ 
+  <style type="text/css">
+    body{
+      background-color: #060606;
+      font-family: 'Varela Round', sans-serif;
+    }
+
+    .ui.main.menu{
+      top: 0px;
+      margin-top: 0px;
+      width: 100%;
+      left: 0px;
+      position: fixed;
+    }
+
+    .right.menu{
+      display: inline;
+    }
+
+    .ui.main.segment{
+      background-color: #060606;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      left: 0px;
+    }
+
+    .ui.welcome.image{
+      position: fixed;
+      right: 0px;
+      height: 100%;
+      width: auto;
+      z-index: -1;
+    }
+
+    .ui.signin.segment{
+      position:fixed;
+      left: 5%;
+      margin-top: 5%;
+    }
+
+    .ui.title.header{
+      font-size:75px;
+    }
+
+    .ui.welcome.header{
+      font-size:50px;
+    }
+
+    .text {
+      display: inline;
+    }
+  </style>
+ 
 </head>
 <body>
-<script type="text/javascript" src="jquery-2.1.1.min.js"></script>
-<script>
 
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : '1457989084469519',
-      cookie     : true,  // enable cookies to allow the server to access
-                          // the session
-      xfbml      : true,  // parse social plugins on this page
-      version    : 'v2.0' // use version 2.0
-    });
+  <div class="ui inverted main menu">
+    <a class="item" href="/">
+      <i class="home icon"></i> Home
+    </a>
+    <a class="item">
+      <i class="photo icon"></i> Albums
+    </a>
+    <a class="item">
+      <i class="globe icon"></i> Browse
+    </a>
+    <div class="right menu">
+      <div class="item">
+        <div class="ui icon input">
+          <input type="text" placeholder="Search...">
+          <i class="search link icon"></i>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  };
+  <div class="ui main segment">
+    <div class="ui left aligned basic signin segment">
+      <div class="ui purple title header">PicSound</div>
+      <div class="ui inverted welcome header">Welcome!<br>We find sound for your photos</div><br><br>
+      <div class="ui pointing right large label">
+        SIGNIN
+      </div>
+      <div class="ui facebook button" onclick="loginFB();">
+        <i class="facebook icon"></i>
+        Facebook
+      </div>
+    </div>
 
-  // Load the SDK asynchronously
-  (function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/sdk.js";
-    fjs.parentNode.insertBefore(js, fjs);
-  }(document, 'script', 'facebook-jssdk'));
+    <img class="ui rounded welcome image" src="/images/jimi.jpg">
 
-  function loginFB(){
-    FB.login(function(response) {
-     if (response.authResponse) {
-       console.log('Welcome!  Fetching your information.... ');
-       FB.api('/me', function(response) {
-         $.get("/register",response,function(res){
-           var access_token =   FB.getAuthResponse()['accessToken'];
-           if(res.login){
-             window.location = "/albums?user=" + response.id + "&token=" + access_token;
-            // window.location = "/albums?user=" + response.query.id;
-           }
-         })
-       });
-     } else {
-       console.log('User cancelled login or did not fully authorize.');
-     }
-   }, {scope: 'email,user_photos'});
-  }
+  </div>
+ 
+  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="javascript/semantic.js" type="text/javascript"></script> 
+  <script type="text/javascript">
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '1457989084469519',
+        cookie     : true,  // enable cookies to allow the server to access
+                            // the session
+        xfbml      : true,  // parse social plugins on this page
+        version    : 'v2.0' // use version 2.0
+      });
 
+    };
 
-</script>
+    // Load the SDK asynchronously
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
 
-<input type ='button' onclick="loginFB();" value="Login with Facebook"></input><br>
-
+    function loginFB(){
+      FB.login(function(response) {
+       if (response.authResponse) {
+         console.log('Welcome!  Fetching your information.... ');
+         FB.api('/me', function(response) {
+           $.get("/register",response,function(res){
+             var access_token =   FB.getAuthResponse()['accessToken'];
+             if(res.login){
+               window.location = "/albums?user=" + response.id + "&token=" + access_token;
+              // window.location = "/albums?user=" + response.query.id;
+             }
+           })
+         });
+       } else {
+         console.log('User cancelled login or did not fully authorize.');
+       }
+     }, {scope: 'email,user_photos'});
+    }
+  </script>     
 
 </body>
 </html>

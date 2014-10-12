@@ -12,7 +12,7 @@ var MongoClient = require('mongodb').MongoClient;
 var Grid = require('gridfs-stream');
 
 
-var dbpath = "mongodb://picsound:526752@114.32.80.151:27017/PicSound";
+var dbpath = "mongodb://127.0.0.1/PicSound";
 
 app.use(express.static(__dirname+"/public"));
 var echonest_key = 'GESA37AURYYE1CO55';
@@ -168,7 +168,7 @@ app.get('/albums',function(req,res){
 							token:fb_token
 						}
 					};
-					var html = jade.renderFile('./public/views/albums.jade', options);
+					var html = jade.renderFile('./public/jade/albums.jade', options);
 					res.send(html);
 			})
 		});
@@ -177,7 +177,7 @@ app.get('/albums',function(req,res){
 
 app.get('/importAlbum',function(req,res){
 	var fb_token = req.query.token;
-	FB.api(req.query.album,{fields:["id","name","from","photos"],access_token: fb_token},function(response){
+	FB.api(req.query.album,{fields:["id","name","cover_photo","from","photos"],access_token: fb_token},function(response){
 		//console.log(response);
 		MongoClient.connect(dbpath, function(err, db) {
 
@@ -191,7 +191,7 @@ app.get('/importAlbum',function(req,res){
 						users.findAndModify(
 							{id:response.from.id},
 							[['id',1]],
-							{$push:{albums:{id:response.id,name:response.name}}},
+							{$push:{albums:{id:response.id,name:response.name,cover_photo:response.cover_photo}}},
 							function(){}
 						);
 					})
@@ -201,7 +201,8 @@ app.get('/importAlbum',function(req,res){
 							id:response.id,
 							name:response.name,
 							photos:[],
-							user:response.from.id
+							user:response.from.id,
+							cover_photo:response.cover_photo
 						}
 						,
 						function(err,result){
@@ -269,7 +270,7 @@ app.get('/album',function(req,res){
 					photos:doc.photos
 				}
 			}
-			var html = jade.renderFile('./public/views/album.jade', options);
+			var html = jade.renderFile('./public/jade/album.jade', options);
 			res.send(html);
 		})
 	})
@@ -365,37 +366,27 @@ app.get('/getRecSong',function(req,res){
 				tags = doc.tags;
 			}
 
-			var songList = [];
-			async.each(tags,
-				function(tag,callback){
-					var url = 'http://developer.echonest.com/api/v4/song/search?format=json&api_key='+echonest_key
-					var query = '&bucket=id:spotify&bucket=tracks&description=' + tag;
-					http.get(url+query,function(response){
-						var data = '';
-						response.on('data',function(chunck){
-							data += chunck;
-						})
-						response.on('end',function(){
-							data = JSON.parse(data)
-							for(var j in data.response.songs){
-								songList.push(data.response.songs[j]);
-							}
-							callback();
-							//res.send();
-						})
-					})
-				},
-				function(err){
-					var spotify_ids = [];
-					for(var k in songList){
-						if(songList[k].tracks.length>0){
-							var foreign_id = songList[k].tracks[0].foreign_id.split(":");
-							spotify_ids.push(foreign_id[2]);
-						}
+			var options = {
+  			uri: 'http://localhost:8088/recommend',
+  			body: {tags:tags},
+  			json: true
+			};
+
+			request.post(options,function(e,r,body){
+				var results = [];
+				for(var k in body){
+					//var spotify_id = body[k].spotify.substring(14,body[k].spotify.length);
+					var result = {
+						name: body[k].name,
+						artist: body[k].artist,
+						spotify: body[k].spotify.substring(14,body[k].spotify.length),
+						preview: body[k].preview,
+						image: body[k].image
 					}
-					res.send(spotify_ids);
+					results.push(result);
 				}
-			);
+				res.send(results);
+			});
 
 		})
 	})
