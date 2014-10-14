@@ -12,100 +12,13 @@ var MongoClient = require('mongodb').MongoClient;
 var Grid = require('gridfs-stream');
 
 
-var dbpath = "mongodb://127.0.0.1/PicSound";
+var dbpath = "mongodb://114.32.80.151/PicSound";
+var engine = "http://114.32.80.151:8088/recommend";
 
 app.use(express.static(__dirname+"/public"));
 var echonest_key = 'GESA37AURYYE1CO55';
 
 app.listen(process.env.PORT || 80);
-
-app.get('/songSearch',function(req,response){
-	console.log(req.query);
-	http.get("http://ws.spotify.com/search/1/track.json?q="+req.query.artistName,function(res){
-		var data = '';
-		res.on('data',function(chunck){
-			data += chunck;
-		})
-		res.on('end',function(){
-			var obj = JSON.parse(data);
-			var trackList = obj.tracks[0].href.substr(14,34);
-			for(var k=1;obj.tracks.length;k++){
-				//console.log(obj.tracks[k].name);
-				if(k>9)	break;
-				else
-					trackList = trackList+","+obj.tracks[k].href.substr(14,34);
-			}
-			console.log(trackList);
-			response.send(trackList);
-		})
-	})
-})
-
-app.get('/flickrAlbum',function(req,response){
-	console.log(req.query);
-	var apiKey = "0305a00c59888f7343a594c3120362a3";
-	var apiURL = "https://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos&format=json&nojsoncallback=1";
-
-	https.get(apiURL+"&api_key="+apiKey+"&photoset_id="+req.query.albumId,function(res){
-		var data = '';
-		res.on('data',function(chunck){
-			data += chunck;
-		})
-		res.on('end',function(){
-			var obj = JSON.parse(data);
-			var sourceURLs = "";
-			var tags = [];
-
-			async.each(obj.photoset.photo,
-				function(photo,callback){
-					var id = photo.id;
-					var apiURL = "https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&format=json&nojsoncallback=1";
-					https.get(apiURL+"&api_key="+apiKey+"&photo_id="+id,function(res){
-						var data = '';
-						res.on('data',function(chunck){
-							data += chunck;
-						})
-						res.on('end',function(){
-							var obj = JSON.parse(data);
-							for(var k in obj.sizes.size){
-								if(obj.sizes.size[k].label == "Original")
-									sourceURLs += "<div style=\"background-image: url("+obj.sizes.size[k].source+")\"></div>\n";
-							}
-							apiURL = "https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&format=json&nojsoncallback=1";
-
-							https.get(apiURL+"&api_key="+apiKey+"&photo_id="+id,function(res){
-								var data = '';
-								res.on('data',function(chunck){
-									data += chunck;
-								})
-								res.on('end',function(){
-									var obj = JSON.parse(data);
-
-  								for(var k in obj.photo.tags.tag){
-     								if(tags.indexOf(obj.photo.tags.tag[k].raw) == -1)
-											tags.push(obj.photo.tags.tag[k].raw);
-    				      }
-									callback();
-								})
-							})//get photo tag
-
-						})
-					})
-				},
-				function(err){
-					var data = {urls:sourceURLs};
-					for(var k in tags){
-						console.log(tags[k]);
-					}
-					response.send(data);
-					//console.log(data);
-					console.log("OK");
-				}
-			);
-
-		})
-	})
-})
 
 app.get('/loadFAlbum',function(req,response){
 	//console.log(req);
@@ -367,7 +280,7 @@ app.get('/getRecSong',function(req,res){
 			}
 
 			var options = {
-  			uri: 'http://localhost:8088/recommend',
+  			uri: engine,
   			body: {tags:tags},
   			json: true
 			};

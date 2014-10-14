@@ -33,15 +33,16 @@ html
       }
 
       .ui.manage.segment{
-        width: 30%;
+        width: 40%;
         margin-top: 15px;
         max-height: 90%;
       }
 
       .ui.slide.segment{
-        width: 69%;
+        width: 59%;
         margin-top: 15px;
         height: 95%;
+        text-align:center;
       }
 
       .ui.slide.disp.segment{
@@ -51,8 +52,6 @@ html
       }
 
       .ui.control.segment{
-        width: 20%;
-        left:40%;
         height: 8%;
         margin-top: 0px;
         padding-top:3px;
@@ -98,7 +97,6 @@ html
 
       .ui.song.message{
         width: 100%;
-        height: 110px;
       }
 
       .ui.song.image{
@@ -113,21 +111,19 @@ html
       .song.content{
         display: inline-block;
         height: 80px;
-        width: 40%;
         vertical-align: middle;
       }
 
       .song.control{
-        width: 30%;
+        float: right;
         vertical-align: middle;
-        display: inline-block;
         text-align: center;
+        z-index: 200;
       }
 
       .song.icon{
         font-size: 3em;
         vertical-align: middle;
-        display: inline-block;
       }
 
       #songs{
@@ -169,7 +165,6 @@ html
 
         div(class="ui secondary right floated stacked slide segment")
           div(class= "ui slide basic disp segment" id="slide")
-            //img(class="ui image" src="/images/jimi.jpg")
           div(class= "ui control basic segment")
             i(class= "step backward big control icon")
             i(class= "big control icon play")
@@ -308,7 +303,6 @@ html
           var photos = !{JSON.stringify(photos)};
           slide_len = photos.length;
           var slideHTML = ""
-          //document.getElementById('slide').innerHTML = '<img class="ui image" src="/images/jimi.jpg">';
           for(var k in photos){
             slideHTML = slideHTML + '<img class="ui image slide'+k+'" src="/image?id=' + photos[k] + '">'
           }
@@ -375,21 +369,32 @@ html
                 document.getElementById('songs').innerHTML = songHTML;
                 $('.inactive').hide();
 
-                var pageHTML = "<a class='icon item'><i class='left arrow icon'></i></a><a class='active pnum item'>1</a>";
+                var pageHTML = "<a class='icon item' dir='-1'><i class='left arrow icon'></i></a><a class='active pnum item page1'>1</a>";
                 for(var k = 2;k <= page;k++){
-                  pageHTML = pageHTML + "<a class='pnum item'>"+k+"</a>";
+                  pageHTML = pageHTML + "<a class='pnum item page"+k+"'>"+k+"</a>";
                 }
-                pageHTML += "<a class='icon item'><i class='right arrow icon'></i>";
+                pageHTML += "<a class='icon item' dir='1'><i class='right arrow icon'></i>";
                 document.getElementById('song_page').innerHTML = pageHTML;
 
                 $('.page .pnum.item').click(function(){
                   if(songNowPage != $(this).text()){
                     $('.page .pnum.item').removeClass('active');
                     $(this).addClass('active');
-                    $('.page'+songNowPage).hide();
-                    $('.page'+$(this).text()).slideDown();
+                    $('.segment.page'+songNowPage).hide();
+                    $('.segment.page'+$(this).text()).slideDown();
                     songNowPage = $(this).text();
-                    console.log(songNowPage);
+                  }
+                })
+
+                $('.page .icon.item').click(function(){
+                  console.log(page);
+                  var nextPage = parseInt(songNowPage) + parseInt($(this).attr('dir'));
+                  if(!(nextPage>page || nextPage<1)){
+                    $('.page .pnum.item').removeClass('active');
+                    $('.page .pnum.item.page'+nextPage).addClass('active');
+                    $('.segment.page'+songNowPage).hide();
+                    $('.segment.page'+nextPage).slideDown();
+                    songNowPage = nextPage;
                   }
                 })
 
