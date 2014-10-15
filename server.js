@@ -12,8 +12,8 @@ var MongoClient = require('mongodb').MongoClient;
 var Grid = require('gridfs-stream');
 
 
-var dbpath = "mongodb://114.32.80.151/PicSound";
-var engine = "http://114.32.80.151:8088/recommend";
+var dbpath = "mongodb://127.0.0.1/PicSound";
+var engine = "http://127.0.0.1:8088/recommend";
 
 app.use(express.static(__dirname+"/public"));
 var echonest_key = 'GESA37AURYYE1CO55';
@@ -253,21 +253,26 @@ app.get('/getTags',function(req,res){
 	})
 })
 
-app.get('/echonest',function(req,res){
-	var url = 'http://developer.echonest.com/api/v4/song/search?format=json&api_key='+echonest_key
-	var query = '&bucket=id:spotify&bucket=tracks&style=rap&description=taiwanese&description=jazz';
-	http.get(url+query,function(response){
-		var data = '';
-		response.on('data',function(chunck){
-			data += chunck;
+app.get('/delTag',function(req,res){
+	MongoClient.connect(dbpath, function(err, db) {
+		var albums = db.collection('albums');
+		albums.findOne({id:req.query.id},function(err,doc){
+			var tags = [];
+			if(!(doc.tags===undefined)){
+				tags = doc.tags;
+				tags.splice(tags.indexOf(req.query.tag),1);
+			}
+			albums.findAndModify(
+				{id:req.query.id},
+				[['id',1]],
+				{$set:{tags:tags}},
+				function(){
+					console.log("tag:"+req.query.tag+" had been removed from album:"+req.query.id);
+					res.send({success:true});
+				}
+			);
 		})
-		response.on('end',function(){
-			console.log(data);
-			res.send(data);
-		})
-
 	})
-
 })
 
 app.get('/getRecSong',function(req,res){

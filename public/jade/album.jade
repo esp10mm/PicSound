@@ -191,6 +191,8 @@ html
           $('.image').on('load',function(){
             var w = $(this).width();
             var h = $(this).height();
+            if(!$(this).hasClass('slide0'))
+              $(this).hide();
             $(this).attr('ow',w);
             $(this).attr('oh',h);
             var sw = $('.slide.disp').width();
@@ -202,8 +204,6 @@ html
             if(h > sh){
               $(this).height(sh);
             }
-            if(!$(this).hasClass('slide0'))
-              $(this).hide();
             var top = (sh - $(this).height())/2;
             $(this).css('top',top+'px');
             loadCount += 1;
@@ -273,7 +273,6 @@ html
                 play_flag = false;
               }
           })
-
         })
 
         function resetImgSize(){
@@ -330,18 +329,24 @@ html
               if(res.length == 0){
                 document.getElementById('tags').innerHTML = "<div class='ui icon message'> <i class='frown icon'></i> <div class='content'> <div class='header'> This album has no tag yet ... </div> <p>Add some with the add button below !</p> </div> </div>";
                 document.getElementById('songs').innerHTML = "<div class='ui icon message'> <i class='frown icon'></i> <div class='content'> <div class='header'> We need some tag to recommend ... </div> <p>Add some in left tag page !</p> </div> </div>";
+                document.getElementById('song_page').innerHTML = "";
               }
               else{
                 var tagsHTML="";
                 for(var k in res){
-                  tagsHTML = tagsHTML + "<div class='ui label'>"+res[k]+"<i class='delete icon'></i></div>";
+                  tagsHTML = tagsHTML + "<div class='ui label tag"+k+"'>"+res[k]+"<i class='delete icon' onclick='deleteTag("+k+")'></i></div>";
                 }
                 document.getElementById('tags').innerHTML = tagsHTML;
-                /*document.getElementById('songs').innerHTML = '<iframe frameborder="0" width="400" height="405" allowtransparency="true" class="spotify">'
-                $('.spotify').attr('src','http://embed.spotify.com/?uri=spotify:trackset:PREFEREDTITLE:5Z7ygHQo02SUrFmcgpwsKW,1x6ACsKV4UdWS2FMuPFUiT,4bi73jCM02fMpkI11Lqmfe')*/
                 loadSong();
               }
           })
+        }
+
+        function deleteTag(k){
+          $.get("/delTag",{id:!{JSON.stringify(id)},tag:$('.tag'+k).text()},function(res){
+            if(res.success)
+              loadTags();
+          });
         }
 
         function loadSong(tags){
@@ -421,7 +426,10 @@ html
                     nowPlaying = null;
                   })
                 })
-
+              }
+              else{
+                document.getElementById('songs').innerHTML = "<div class='ui icon message'> <i class='frown icon'></i> <div class='content'> <div class='header'> Sorry, no song for these tags yet ... </div> <p>Try to add other tag in left tag page !</p> </div> </div>";
+                document.getElementById('song_page').innerHTML = "";
               }
           })
         }
