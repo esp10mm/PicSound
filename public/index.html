@@ -129,7 +129,8 @@
          console.log('Welcome!  Fetching your information.... ');
          FB.api('/me', function(response) {
            $.get("/register",response,function(res){
-             var access_token =   FB.getAuthResponse()['accessToken'];
+             var access_token = FB.getAuthResponse()['accessToken'];
+             document.cookie = "FBToken=" + access_token;
              if(res.login){
                window.location = "/albums?user=" + response.id + "&token=" + access_token;
               // window.location = "/albums?user=" + response.query.id;
