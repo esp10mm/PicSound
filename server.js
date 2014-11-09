@@ -1,4 +1,6 @@
 var express = require('express');
+var session = require('express-session')
+var cookieParser = require('cookie-parser')
 var app = express();
 var http = require('http');
 var https = require('https');
@@ -13,43 +15,12 @@ var Grid = require('gridfs-stream');
 
 
 var dbpath = "mongodb://127.0.0.1/PicSound";
-var engine = "http://127.0.0.1:8088/recommend";
+var engine = "http://127.0.0.1:8088/";
 
 app.use(express.static(__dirname+"/public"));
-var echonest_key = 'GESA37AURYYE1CO55';
+app.use(cookieParser())
 
 app.listen(process.env.PORT || 80);
-
-app.get('/loadFAlbum',function(req,response){
-	//console.log(req);
-	MongoClient.connect(dbpath, function(err, db) {
-		if(!err) {
-			console.log("We are connected");
-		}
-		var gfs = Grid(db, mongo);
-
-		async.each(req.query.photos.data,
-			function(image,callback){
-				var save_to_mongo = request(image.source).pipe(gfs.createWriteStream({
-					filename: image.id + ".jpg",
-					metadata:{
-						id:image.id,
-						user:req.query.from.id,
-						album:req.query.id
-					}
-				}));
-				save_to_mongo.on('close', function(){
-					console.log(image.id + "is saved !")
-					callback();
-				});
-			},
-			function(err){
-				response.send("response");
-				console.log("DONE!");
-			}
-		)
-	})
-})
 
 app.get('/image',function(req,response){
 	MongoClient.connect(dbpath, function(err, db) {
@@ -63,7 +34,7 @@ app.get('/image',function(req,response){
 
 app.get('/albums',function(req,res){
 	//var doc = fs.readFileSync( './public/views/albums.jade','utf-8' );
-	var fb_token = req.query.token;
+	var fb_token = req.cookies.FBToken;
 	FB.api('me', { fields: ['id','albums'], access_token: fb_token }, function(response) {
 		MongoClient.connect(dbpath, function(err, db) {
 			var users = db.collection('users');
@@ -115,7 +86,8 @@ app.get('/importAlbum',function(req,res){
 							name:response.name,
 							photos:[],
 							user:response.from.id,
-							cover_photo:response.cover_photo
+							cover_photo:response.cover_photo,
+							vote:{}
 						}
 						,
 						function(err,result){
@@ -285,7 +257,7 @@ app.get('/getRecSong',function(req,res){
 			}
 
 			var options = {
-  			uri: engine,
+  			uri: engine + "recommend",
   			body: {tags:tags},
   			json: true
 			};
@@ -295,6 +267,7 @@ app.get('/getRecSong',function(req,res){
 				for(var k in body){
 					//var spotify_id = body[k].spotify.substring(14,body[k].spotify.length);
 					var result = {
+						id: body[k].id,
 						name: body[k].name,
 						artist: body[k].artist,
 						spotify: body[k].spotify.substring(14,body[k].spotify.length),
@@ -343,7 +316,39 @@ app.get('/register',function(req,response){
 	})
 })
 
-app.get('/slides',function(req,response){
-	var s = '<html><head><link href=\"jquery.skippr.css\" rel=\"stylesheet\"></head><body><div id=\"slides\"><div style=\"background-image: url(img1.jpg)\"></div></div><script type=\"text/javascript\" src=\"jquery-2.1.1.min.js\"></script><script type=\"text/javascript\" src=\"jquery.skippr.js\"></script><script type=\"text/javascript\">$(document).ready(function(){$(\"#slides\").skippr();})</script></body></html>';
-	response.send(s);
+app.get('/vote',function(req,res){
+	console.log(req.cookies.user);
+	console.log(req.query);
+
+	MongoClient.connect(dbpath, function(err, db) {
+		db.collection('albums').findOne({id:req.query.album},function(err,doc){
+			var options = {
+				uri: engine + "weight",
+				body: {song:req.query.song,tags:doc.tags,vote:req.query.vote},
+				json: true
+			};
+
+			if(doc.vote[req.query.song] === undefined){
+				var songvote = doc.vote;
+				songvote[req.query.song] = parseInt(req.query.vote);
+				db.collection('albums').findAndModify({id:req.query.album},[['id',1]],{$set:{vote:songvote}},function(){
+					request.post(options,function(e,r,body){
+						res.send({success:true});
+					})
+				});
+			}
+			else{
+				var songvote = doc.vote;
+				songvote[req.query.song] = songvote[req.query.song] + parseInt(req.query.vote);
+				db.collection('albums').findAndModify({id:req.query.album},[['id',1]],{$set:{vote:songvote}},function(){
+					request.post(options,function(e,r,body){
+						res.send({success:true});
+					})
+				});
+			}
+
+		})
+	})
+
+
 })

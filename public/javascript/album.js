@@ -1,41 +1,33 @@
-var slide_cur = 0;
-var slide_len ;
-var play_flag = false;
+//image num
+var loadCount = 0;
+
+//slide control var
+var slideCur = 0;
+var slideLen;
+var slidePlay = false;
 var timer;
+
+//song play control var
 var songs = [];
 var nowPlaying = null;
 var songNowPage = 1;
 
 function init(){
-  console.log("init");
+
   loadPhotos();
   loadTags();
 
-  var loadCount = 0;
-  $('.image').on('load',function(){
-    var w = $(this).width();
-    var h = $(this).height();
-    if(!$(this).hasClass('slide0'))
-      $(this).hide();
-    $(this).attr('ow',w);
-    $(this).attr('oh',h);
-    var sw = $('.slide.disp').width();
-    var sh = $('.slide.disp').height();
+  //hide inactive elements
+  $('.inactive').hide();
 
-    if(w > sw){
-      $(this).width(sw);
-    }
-    if(h > sh){
-      $(this).height(sh);
-    }
-    var top = (sh - $(this).height())/2;
-    $(this).css('top',top+'px');
-    loadCount += 1;
-    if(loadCount == slide_len)
-      $('.play.control').click();
-  });
-
-  $( '.inactive' ).hide();
+  $('.tabular .item').on('click',function(){
+    curTab = $(this).attr('tab');
+    $('.tab0, .tab1, .tab2')
+      .hide()
+      .end()
+      .find('.tab'+curTab)
+      .slideDown();
+  })
 
   $('.manage .tag_song .item').on('click', function() {
     $('.manage .tag_song .item').removeClass('active');
@@ -50,53 +42,7 @@ function init(){
     resetImgSize();
   });
 
-  $('.forward.control').on('click',function(){
-    var sel,sel2;
-    if(slide_cur < (slide_len-1)){
-      sel = ".slide" + slide_cur;
-      sel2 = ".slide" + (slide_cur+1);
-    }
-    else{
-      sel = ".slide" + (slide_len-1);
-      sel2 = ".slide0";
-      slide_cur = -1;
-    }
-    $(sel).hide();
-    $(sel2).show();
-    slide_cur += 1;
-  })
-
-  $('.backward.control').on('click',function(){
-    var sel,sel2;
-    if(slide_cur == 0){
-      sel2 = ".slide0";
-      sel = ".slide" + (slide_len-1);
-      slide_cur = slide_len;
-    }
-    else{
-      sel = ".slide" + (slide_cur-1);
-      sel2 = ".slide" + slide_cur;
-    }
-
-    $(sel2).hide();
-    $(sel).show();
-    slide_cur -= 1;
-  })
-
-  $('.play.control').on('click',function(){
-      if(!play_flag){
-        $(this).removeClass('play');
-        $(this).addClass('pause');
-        play_flag = true;
-        playSlide();
-      }
-      else{
-        clearTimeout(timer);
-        $(this).removeClass('pause');
-        $(this).addClass('play');
-        play_flag = false;
-      }
-  })
+  initSlide();
 
 }
 
@@ -124,12 +70,40 @@ function resetImgSize(){
 }
 
 function loadPhotos(){
-  slide_len = photos.length;
+  slideLen = photos.length;
   var slideHTML = ""
   for(var k in photos){
-    slideHTML = slideHTML + '<img class="ui image slide'+k+'" src="/image?id=' + photos[k] + '">'
+    slideHTML = slideHTML + '<img class="ui image slide'+k+'" src="/image?id=' + photos[k] + '" style="display:none">'
   }
   document.getElementById('slide').innerHTML = slideHTML;
+
+  //resize images after they loaded
+  $('.image').on('load',function(){
+    var w = $(this).width()
+    var h = $(this).height()
+    $(this).attr('ow',w)
+    $(this).attr('oh',h)
+    var sw = $('.slide.disp').width()
+    var sh = $('.slide.disp').height()
+    var ratio = w/h
+    if(w > sw){
+      $(this).width(sw)
+      $(this).height(sw/ratio)
+      h = $(this).height()
+    }
+    if(h > sh){
+      $(this).height(sh)
+      $(this).width(sh*ratio)
+    }
+    var top = (sh - $(this).height())/2
+    $(this).css('top',top+'px')
+    if($(this).hasClass('slide0'))
+      $(this).show()
+    loadCount += 1
+    if(loadCount == slideLen)
+      $('.play.control').click()
+  });
+
 }
 
 function loadTags(){
@@ -150,22 +124,6 @@ function loadTags(){
   })
 }
 
-function songDisp(){
-  $( '.ui .segment .tag' )
-    .hide()
-    .end()
-    .find('.ui.segment.song')
-    .slideDown();
-}
-
-function tagDisp(){
-  $( '.ui.segment.song' )
-    .hide()
-    .end()
-    .find('.ui.segment.tag')
-    .slideDown();
-}
-
 function deleteTag(k){
   $.get("/delTag",{id:albumID,tag:$('.tag'+k).text()},function(res){
     if(res.success)
@@ -175,16 +133,23 @@ function deleteTag(k){
 
 function loadSong(tags){
   $.get("/getRecSong",{id:albumID},function(res){
-      //console.log(res);
+      songs = [];
+      songNowPage = 1;
       var songsMaxHeight = $('.stacked.slide.segment').height()-$('.tabular.menu').height();
       var page = 1;
 
       if(res.length > 0){
         var songHTML = "<div class='ui basic segment song_disp page1'>";
         for(var k in res){
-          console.log(songsMaxHeight);
+          //console.log(songsMaxHeight);
           songsMaxHeight -= 110;
-          songHTML = songHTML + "<div class='ui song message'><img class='ui song image' src='"+res[k].image+"'><div class='song content'><div class='header'>"+res[k].name+"</div><p>"+res[k].artist+"</p></div><div class='song control'><i class='song play icon' song="+k+"></i></div></div>";
+          songHTML = songHTML +
+            "<div class='ui song message'><img class='ui song image' src='" +res[k].image +
+            "'><div class='song content'><div class='header'>" + res[k].name +
+            "</div><p>" + res[k].artist+"</p></div><div class='song control'>"+
+            "<i class='song thumbs down outline icon' song='" + res[k].id +
+            "'></i><i class='song thumbs up outline icon' song='" + res[k].id + "'></i><i class='song play icon' song="+k+"></i></div></div>";
+          console.log(res[k]);
           var audioElement = document.createElement('audio');
           audioElement.setAttribute('src',res[k].preview);
           songs.push(audioElement);
@@ -193,6 +158,7 @@ function loadSong(tags){
             songsMaxHeight = $('.stacked.slide.segment').height()-$('.tabular.menu').height();
             songHTML += "</div><div class='ui inactive basic segment song_disp page"+page+"'>";
           }
+
         }
         songHTML += "</div>"
         document.getElementById('songs').innerHTML = songHTML;
@@ -227,6 +193,30 @@ function loadSong(tags){
           }
         })
 
+        $('.song.thumbs.up').click(function(){
+          $(this).removeClass('outline');
+          var req = {
+            vote: 1,
+            album: albumID,
+            song: $(this).attr('song')
+          }
+          $.get('/vote',req,function(res){
+            console.log(res);
+          })
+        })
+
+        $('.song.thumbs.down').click(function(){
+          $(this).removeClass('outline');
+          var req = {
+            vote: -1,
+            album: albumID,
+            song: $(this).attr('song')
+          }
+          $.get('/vote',req,function(res){
+            console.log(res);
+          })
+        })
+
         $('.song.play').click(function() {
           if(nowPlaying != null){
             var t = $('.song.pause').attr('song');
@@ -250,6 +240,7 @@ function loadSong(tags){
             nowPlaying = null;
           })
         })
+
       }
       else{
         document.getElementById('songs').innerHTML = "<div class='ui icon message'> <i class='frown icon'></i> <div class='content'> <div class='header'> Sorry, no song for these tags yet ... </div> <p>Try to add other tag in left tag page !</p> </div> </div>";
@@ -269,23 +260,73 @@ function newTag(){
   $('.manage .tag .button').popup('hide');
 }
 
-function playSlide(){
-  if(!play_flag)
-    return;
-  timer = setTimeout(function(){
+function initSlide(){
+  $('.forward.control').on('click',function(){
     var sel,sel2;
-    if(slide_cur < (slide_len-1)){
-      sel = ".slide" + slide_cur;
-      sel2 = ".slide" + (slide_cur+1);
+    if(slideCur < (slideLen-1)){
+      sel = ".slide" + slideCur;
+      sel2 = ".slide" + (slideCur+1);
     }
     else{
-      sel = ".slide" + (slide_len-1);
+      sel = ".slide" + (slideLen-1);
       sel2 = ".slide0";
-      slide_cur = -1;
+      slideCur = -1;
     }
     $(sel).hide();
     $(sel2).show();
-    slide_cur += 1;
+    slideCur += 1;
+  })
+
+  $('.backward.control').on('click',function(){
+    var sel,sel2;
+    if(slideCur == 0){
+      sel2 = ".slide0";
+      sel = ".slide" + (slideLen-1);
+      slideCur = slideLen;
+    }
+    else{
+      sel = ".slide" + (slideCur-1);
+      sel2 = ".slide" + slideCur;
+    }
+
+    $(sel2).hide();
+    $(sel).show();
+    slideCur -= 1;
+  })
+
+  $('.play.control').on('click',function(){
+      if(!slidePlay){
+        $(this).removeClass('play');
+        $(this).addClass('pause');
+        slidePlay = true;
+        playSlide();
+      }
+      else{
+        clearTimeout(timer);
+        $(this).removeClass('pause');
+        $(this).addClass('play');
+        slidePlay = false;
+      }
+  })
+}
+
+function playSlide(){
+  if(!slidePlay)
+    return;
+  timer = setTimeout(function(){
+    var sel,sel2;
+    if(slideCur < (slideLen-1)){
+      sel = ".slide" + slideCur;
+      sel2 = ".slide" + (slideCur+1);
+    }
+    else{
+      sel = ".slide" + (slideLen-1);
+      sel2 = ".slide0";
+      slideCur = -1;
+    }
+    $(sel).hide();
+    $(sel2).show();
+    slideCur += 1;
 
     playSlide();
   },2000)

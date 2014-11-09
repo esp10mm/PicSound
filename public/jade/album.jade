@@ -3,7 +3,7 @@ html
   head
     title Album
     meta(charset='utf-8')
-    link(href=href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css')
+    link(href='http://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css')
     link(href="css/semantic.css" rel="stylesheet" type="text/css")
     style.
       body{
@@ -126,6 +126,11 @@ html
         vertical-align: middle;
       }
 
+      .song.thumbs.icon{
+        font-size: 2em;
+        vertical-align: middle;
+      }
+
       #songs{
         margin-left:3px;
         padding-left:0px;
@@ -151,17 +156,24 @@ html
       div(class="ui main segment")
         div(class="ui secondary left floated manage segment",id="album_manage")
           div(class="ui tabular tag_song menu")
-            a(class="active item" onclick="tagDisp()")
+            a(class="active item" tab='0')
               |Tags
-            a(class="item" onclick="songDisp()")
-              |Recommend Song
-          div(class="ui basic segment tag")
+            a(class="item" tab='1')
+              |Song
+            a(class="item" tab='2')
+              |Recommend
+          div(class="ui basic segment tag tab0")
             div(class="ui basic disp segment" id="tags")
             div(class="ui small icon button" data-html='New Tag : <br><div class="ui mini input"><input type="text" id="newTag"></div>&nbsp;<div class="ui mini button" onclick="newTag()">OK</div>')
               i(class="add icon")
-          div(class="ui inactive basic raised segment song")
+          div(class="ui inactive basic raised segment song tab1")
             div(class="ui basic song segment" id="songs")
             div(class="ui pagination song page menu" id="song_page")
+          div(class="ui inactive basic raised segment recommend tab2")
+            div(class="ui basic segment" id="recommend")
+              div(class="ui icon input loading")
+                input(type="text" placeholder="Search Song ...")
+                i(class="inactive icon")
 
         div(class="ui secondary right floated stacked slide segment")
           div(class= "ui slide basic disp segment" id="slide")
