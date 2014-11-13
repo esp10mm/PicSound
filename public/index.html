@@ -111,7 +111,6 @@
         xfbml      : true,  // parse social plugins on this page
         version    : 'v2.0' // use version 2.0
       });
-
     };
 
     // Load the SDK asynchronously
@@ -132,8 +131,7 @@
              document.cookie = "FBToken=" + FB.getAuthResponse()['accessToken'];
              document.cookie = "user=" + response.id;
              if(res.login){
-               window.location = "/albums?user=" + response.id;
-              // window.location = "/albums?user=" + response.query.id;
+               window.location = "/albums";
              }
            })
          });

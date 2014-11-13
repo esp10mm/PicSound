@@ -124,15 +124,10 @@ html
   script(src="javascript/albums.js" type="text/javascript")
   script.
 
-      var fb_albums= !{JSON.stringify(data.albums_option)};
       var token = !{JSON.stringify(data.token)};
       var uid = !{JSON.stringify(data.user.id)};
 
       loadAlbums();
-
-      for(var k in fb_albums){
-        document.getElementById('fb_options').innerHTML += '<div class="item" data-value="'+fb_albums[k].id+'">'+fb_albums[k].name+'</div>';
-      }
 
       $('.ui.modal').modal();
       $('.ui.selection.dropdown').dropdown();

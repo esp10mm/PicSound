@@ -35,27 +35,27 @@ app.get('/image',function(req,response){
 app.get('/albums',function(req,res){
 	//var doc = fs.readFileSync( './public/views/albums.jade','utf-8' );
 	var fb_token = req.cookies.FBToken;
-	FB.api('me', { fields: ['id','albums'], access_token: fb_token }, function(response) {
-		MongoClient.connect(dbpath, function(err, db) {
-			var users = db.collection('users');
-			users.findOne({id:response.id},function(err,doc){
-					var albums = [];
-					if(doc.albums != null)
-						albums = doc.albums;
-					var options = {
-						data:{
-							user:{
-								id:req.query.user
-							},
-							albums:albums,
-							albums_option:response.albums.data,
-							token:fb_token
-						}
-					};
-					var html = jade.renderFile('./public/jade/albums.jade', options);
-					res.send(html);
-			})
-		});
+	var uid = req.cookies.user;
+	MongoClient.connect(dbpath, function(err, db) {
+		var users = db.collection('users');
+		users.findOne({id:uid},function(err,doc){
+				var albums = [];
+				if(doc.albums != null)
+					albums = doc.albums;
+				var options = {
+					data:{
+						user:{
+							id:uid
+						},
+						albums:albums,
+						token:"undefined"
+					}
+				};
+				if(fb_token !== undefined)
+					options.data.token = fb_token;
+				var html = jade.renderFile('./public/jade/albums.jade', options);
+				res.send(html);
+		})
 	});
 })
 
@@ -346,9 +346,6 @@ app.get('/vote',function(req,res){
 					})
 				});
 			}
-
 		})
 	})
-
-
 })
