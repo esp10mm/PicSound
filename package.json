@@ -8,6 +8,7 @@
     "request" : "*" ,
     "jade" : "*" ,
     "mongodb" : "*" ,
-    "gridfs-stream" : "*"
+    "gridfs-stream" : "*",
+    "cookie-parser" : "*"
   }
 }
