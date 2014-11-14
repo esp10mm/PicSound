@@ -21,6 +21,7 @@ function importFromFBDisp(){
     loginFB();
   else{
     loadFBAlbumOptions(function(){
+      $('.ui.selection.fb.dropdown').dropdown();
       $('.importFB.modal')
         .modal('setting', 'transition', "horizontal flip")
         .modal('show')
