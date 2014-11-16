@@ -30,6 +30,14 @@ function importFromFBDisp(){
   }
 }
 
+function uploadDisp(){
+  $('.upload.modal')
+    .modal('setting', 'transition', "horizontal flip")
+    .modal('show')
+    .modal('hide others')
+  ;
+}
+
 function importFromFB(){
   var selected = $('.ui.selection.dropdown.fb').dropdown('get value');
   document.getElementById('fbloading').innerHTML = "<i class='big loading icon'></i>";
@@ -122,9 +130,10 @@ function loginFB(){
 function loadFBAlbumOptions(callback){
   FB.api('me', { fields: ['id','albums'], access_token: token }, function(response) {
     fb_albums = response.albums.data;
-    for(var k in fb_albums){
-      document.getElementById('fb_options').innerHTML += '<div class="item" data-value="'+fb_albums[k].id+'">'+fb_albums[k].name+'</div>';
-    }
+    optionsHTML = '';
+    for(var k in fb_albums)
+      optionsHTML += '<div class="item" data-value="'+fb_albums[k].id+'">'+fb_albums[k].name+'</div>';
+    document.getElementById('fb_options').innerHTML = optionsHTML;
     callback();
   })
 }

@@ -12,6 +12,8 @@ var jade = require('jade');
 var mongo = require('mongodb');
 var MongoClient = require('mongodb').MongoClient;
 var Grid = require('gridfs-stream');
+var formidable = require('formidable');
+var util = require('util');
 
 
 var dbpath = "mongodb://127.0.0.1/PicSound";
@@ -25,10 +27,10 @@ app.listen(process.env.PORT || 80);
 app.get('/image',function(req,response){
 	MongoClient.connect(dbpath, function(err, db) {
 		var gfs = Grid(db, mongo);
-		var readstream = gfs.createReadStream({
-			filename: req.query.id + '.jpg'
-		});
-		readstream.pipe(response);
+		gfs.files.find({'metadata.id': req.query.id}).toArray(function (err, files) {
+			var readstream = gfs.createReadStream({_id:files[0]._id});
+			readstream.pipe(response);
+  	})
 	})
 })
 
@@ -62,9 +64,7 @@ app.get('/albums',function(req,res){
 app.get('/importAlbum',function(req,res){
 	var fb_token = req.query.token;
 	FB.api(req.query.album,{fields:["id","name","cover_photo","from","photos"],access_token: fb_token},function(response){
-		//console.log(response);
 		MongoClient.connect(dbpath, function(err, db) {
-
 			//register album data & save photos to gridfs
 			var albums = db.collection('albums');
 			albums.findOne({id:response.id},function(err,doc){
@@ -140,8 +140,6 @@ app.get('/importAlbum',function(req,res){
 
 		})//mongo_callback
 	})//FB_callback
-
-
 })
 
 app.get('/album',function(req,res){
@@ -349,3 +347,85 @@ app.get('/vote',function(req,res){
 		})
 	})
 })
+
+app.post('/albumUpload', function (req, res){
+	var imageExtenstion = ['.jpg','.png','.gif'];
+  var form = new formidable.IncomingForm();
+	var albumID = "" + idGen();
+	var albumTitle = "";
+	var coverPhoto = "";
+
+  form.parse(req, function(err, fields, files) {
+		albumTitle = fields.title;
+  });
+
+  form.on('end', function(fields, files) {
+		var images = this.openedFiles;
+		var imageIDs = [];
+		async.each(images,
+			function(image,callback){
+				var extension = image.name.slice(image.name.indexOf('.'));
+				var fileID = "" + idGen();
+				var fileName = fileID + extension;
+				if(imageExtenstion.indexOf(extension) != -1){
+						MongoClient.connect(dbpath, function(err, db) {
+							var gfs = Grid(db, mongo);
+							var save_to_mongo = fs.createReadStream(image.path).pipe(gfs.createWriteStream({
+								filename: fileName,
+								metadata:{
+									id:fileID,
+									user:req.cookies.user,
+									album:albumID
+								}
+							}));
+							save_to_mongo.on('close', function(){
+								console.log(fileName + " is saved !")
+								if(images.indexOf(image) == 0)
+									coverPhoto = fileID;
+								imageIDs.push(fileID);
+								callback();
+							});
+						})
+				}
+				else
+					callback();
+			},
+			function(err){
+				MongoClient.connect(dbpath, function(err, db) {
+					var users = db.collection('users');
+					users.findOne({id:req.cookies.user},function(err,doc){
+						users.findAndModify(
+							{id:req.cookies.user},
+							[['id',1]],
+							{$push:{albums:{id:albumID,name:albumTitle,cover_photo:coverPhoto}}},
+							function(){
+								var albums = db.collection('albums');
+								albums.insert(
+									{
+										id:albumID,
+										name:albumTitle,
+										photos:imageIDs,
+										user:req.cookies.user,
+										cover_photo:coverPhoto,
+										vote:{}
+									},
+									function(){
+										console.log('album: ' + albumID +" is created !;")
+									}
+								);
+							}
+						);
+					})
+				})
+			}
+		)
+  });
+});
+
+function idGen(){
+	var id = "";
+	for(i=0;i<15;i++){
+		id = Math.floor((Math.random() * 1000000000000000));
+	}
+	return id;
+}

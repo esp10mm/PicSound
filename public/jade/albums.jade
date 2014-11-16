@@ -78,7 +78,7 @@ html
         a(class="item" onclick="importFromFBDisp()")
           i(class="facebook icon")
           |Import from Facebook
-        a(class="item" onclick="importFromFBDisp()")
+        a(class="item" onclick="uploadDisp()")
           i(class="cloud upload icon")
           |Upload photos
         div(class="header item")
@@ -108,6 +108,34 @@ html
           div(class="ui button")
             |Cancel
 
+      //- modal for displaying upload panel
+      div(class="ui upload modal")
+        i(class="close icon")
+        div(class="header")
+          |Upload photos :
+        div(class="content")
+          form(action="/albumUpload" enctype="multipart/form-data" method="post" id="uploadForm")
+            div(class="ui labeled uploadTitle input")
+              input(type="text" placeholder="Please enter album title" id="uploadTitle" name="title")
+              div(class="ui corner label")
+                i(class="asterisk icon")
+            | &nbsp; &nbsp; &nbsp;
+            label(for="file" class="ui icon button")
+              i(class="file icon")
+              |Open files
+            input(type="file" id="file" multiple="multiple" name="upload" style="display:none")
+            br
+            br
+            h2(class="ui left floated header" id="selected_file_text")
+              |0 file selected
+            div(class="ui icon button" id="uploadSubmit")
+                i(class="cloud upload icon")
+                |Upload
+        div(class="actions")
+          div(class="ui button")
+              |Cancel
+
+      //- modal for displaying message
       div(class="ui msg modal")
         i(class="close icon")
         div(class="header",id="msg_header")
@@ -129,5 +157,30 @@ html
 
       loadAlbums();
 
+      document.getElementById("file").onchange = function() {
+        var f = document.getElementById("file");
+        document.getElementById("selected_file_text").innerHTML = f.files.length + ' file selected '
+      };
+
+      $( "#uploadSubmit" ).click(function(){
+        console.log('fffffbbb');
+        if($("#uploadTitle").val().length == 0)
+          $(".uploadTitle.input").addClass("error");
+        else{
+          //- $.post('/albumUpload',new FormData(),function(res){
+          //-   console.log('hello');
+          //- })
+          var formData = new FormData($("#uploadForm")[0]);
+          console.log(formData);
+          $.ajax( {
+            url: '/albumUpload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false
+          });
+
+        }
+      });
+
       $('.ui.modal').modal();
-      
