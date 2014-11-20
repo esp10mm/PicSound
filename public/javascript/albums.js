@@ -16,6 +16,121 @@ window.fbAsyncInit = function() {
   fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
 
+function init(){
+  loadAlbums();
+
+  document.getElementById("file").onchange = function() {
+    var f = document.getElementById("file");
+    document.getElementById("selected_file_text").innerHTML = f.files.length + ' file selected '
+  };
+
+  $( "#uploadSubmit" ).click(function(){
+    if($("#uploadTitle").val().length == 0)
+      $(".uploadTitle.input").addClass("error");
+    else{
+      var formData = new FormData($("#uploadForm")[0]);
+      $.ajax( {
+        url: '/albumUpload',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(res){
+          var success_flag;
+          if(res.error == null){
+            success_flag = true;
+            document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
+            document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='smile icon'></i>Succeeded !</div>";
+            document.getElementById('fbloading').innerHTML = "";
+
+            $('.msg.modal')
+              .modal('setting', 'transition', "horizontal flip")
+              .modal('show')
+              .modal('hide others')
+            ;
+
+            loadAlbums();
+
+          }
+          else{
+            success_flag = true;
+            document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
+            document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='frown icon'></i>"+res.error+"</div>";
+            document.getElementById('fbloading').innerHTML = "";
+
+            $('.msg.modal')
+              .modal('setting', 'transition', "horizontal flip")
+              .modal('show')
+              .modal('hide others')
+            ;
+          }
+        }
+      });
+
+    }
+  });
+
+  $('#delItem').on('click',delMode);
+
+  $('.ui.modal').modal();
+}
+
+function delMode(){
+
+  var delHtml = '<i class="red remove icon" id="delNo"/><i class="green checkmark icon" id="delYes"/>Confirm';
+  $('#delItem')
+    .html(delHtml)
+    .off('click',delMode);
+
+  $('.album.item').each(function(){
+    var albumHtml = $(this).html() +
+      '<a class="ui corner label">' +
+      '<i class="remove icon"></i></a>';
+    $(this).html(albumHtml);
+    $(this).unbind('click');
+  })
+
+  $('.corner.label').on('click',function(){
+    if($(this).hasClass('red'))
+      $(this).removeClass('red');
+    else
+      $(this).addClass('red');
+  })
+
+  $('#delYes').on('click',function(){
+    var aids = [];
+    $('.red.corner.label').each(function(){
+      var aid = $(this).parent().attr('aid');
+      aids.push(aid);
+    })
+
+    var data = {};
+    $.ajax({
+      'type':'POST',
+      'url':'/deleteAlbum',
+      'data':JSON.stringify({"aids":aids}),
+      'contentType': "application/json",
+      'success': delModeOff
+    })
+
+  });
+
+  $('#delNo').on('click',delModeOff);
+
+}
+
+function delModeOff(){
+  setTimeout(function(){
+    $('#delItem').on('click',delMode);
+  },100)
+
+  var delHtml = '<i class="trash icon"/>Delete';
+  $('#delItem').html(delHtml);
+  $('.corner.label').remove();
+
+  loadAlbums();
+}
+
 function importFromFBDisp(){
   if(token == 'undefined')
     loginFB();
@@ -96,11 +211,16 @@ function loadAlbums(){
     var albumsHTML = "<div class='ui items'>";
     if(res.length>0){
       for(var k in res){
-        albumsHTML = albumsHTML + "<div class='item' onclick='window.location = \"/album?id="+res[k].id+"\";'><div class='image'><img class='cover_photo' src='/image?id="+res[k].cover_photo+"'></div><div class='content'><div class='ui header'>"+res[k].name+"</div></div></div>";
-        console.log(res[k].id);
+        albumsHTML = albumsHTML +
+          "<div class='album item' url='/album?id=" + res[k].id + "' aid='" + res[k].id + "'>" +
+          "<div class='image'><img class='cover_photo' src='/image?id=" + res[k].cover_photo + "'></div>" +
+          "<div class='content'><div class='ui header'>" + res[k].name + "</div></div></div>";
       }
       albumsHTML+= "</div>";
       document.getElementById('main_disp').innerHTML = albumsHTML;
+      $('.album.item').click(function(){
+        window.location = $(this).attr('url');
+      })
     }
     else
       document.getElementById('main_disp').innerHTML = '<div class="ui icon message"><i class="frown icon"></i><div class="content"><div class="header">You have no album yet ...</div><p>You can add some with sidebar!</p></div></div>';
@@ -129,11 +249,16 @@ function loginFB(){
 
 function loadFBAlbumOptions(callback){
   FB.api('me', { fields: ['id','albums'], access_token: token }, function(response) {
-    fb_albums = response.albums.data;
-    optionsHTML = '';
-    for(var k in fb_albums)
-      optionsHTML += '<div class="item" data-value="'+fb_albums[k].id+'">'+fb_albums[k].name+'</div>';
-    document.getElementById('fb_options').innerHTML = optionsHTML;
-    callback();
+    if(response.albums === undefined){
+      loginFB();
+    }
+    else{
+      fb_albums = response.albums.data;
+      optionsHTML = '';
+      for(var k in fb_albums)
+        optionsHTML += '<div class="item" data-value="'+fb_albums[k].id+'">'+fb_albums[k].name+'</div>';
+      document.getElementById('fb_options').innerHTML = optionsHTML;
+        callback();
+    }
   })
 }

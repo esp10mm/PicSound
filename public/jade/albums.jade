@@ -84,7 +84,7 @@ html
         div(class="header item")
           i(class="pencil icon")
           |Manage
-        a(class="item")
+        a(class="item" id="delItem")
           i(class="trash icon")
           |Delete
       div(class="ui right floated stacked disp segment",id="main_disp")
@@ -155,32 +155,4 @@ html
       var token = !{JSON.stringify(data.token)};
       var uid = !{JSON.stringify(data.user.id)};
 
-      loadAlbums();
-
-      document.getElementById("file").onchange = function() {
-        var f = document.getElementById("file");
-        document.getElementById("selected_file_text").innerHTML = f.files.length + ' file selected '
-      };
-
-      $( "#uploadSubmit" ).click(function(){
-        console.log('fffffbbb');
-        if($("#uploadTitle").val().length == 0)
-          $(".uploadTitle.input").addClass("error");
-        else{
-          //- $.post('/albumUpload',new FormData(),function(res){
-          //-   console.log('hello');
-          //- })
-          var formData = new FormData($("#uploadForm")[0]);
-          console.log(formData);
-          $.ajax( {
-            url: '/albumUpload',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false
-          });
-
-        }
-      });
-
-      $('.ui.modal').modal();
+      init();

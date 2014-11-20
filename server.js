@@ -1,7 +1,9 @@
 var express = require('express');
-var session = require('express-session')
-var cookieParser = require('cookie-parser')
+var session = require('express-session');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 var app = express();
+
 var http = require('http');
 var https = require('https');
 var async = require('async');
@@ -20,7 +22,8 @@ var dbpath = "mongodb://127.0.0.1/PicSound";
 var engine = "http://127.0.0.1:8088/";
 
 app.use(express.static(__dirname+"/public"));
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(bodyParser.json());
 
 app.listen(process.env.PORT || 80);
 
@@ -348,7 +351,7 @@ app.get('/vote',function(req,res){
 	})
 })
 
-app.post('/albumUpload', function (req, res){
+app.post('/albumUpload', function(req, res){
 	var imageExtenstion = ['.jpg','.png','.gif'];
   var form = new formidable.IncomingForm();
 	var albumID = "" + idGen();
@@ -411,6 +414,7 @@ app.post('/albumUpload', function (req, res){
 									},
 									function(){
 										console.log('album: ' + albumID +" is created !;")
+										res.send({success:true});
 									}
 								);
 							}
@@ -422,10 +426,51 @@ app.post('/albumUpload', function (req, res){
   });
 });
 
+app.post('/deleteAlbum',function(req,res){
+	var aids = req.body.aids;
+
+	async.each(aids,
+		function(aid,callback){
+			MongoClient.connect(dbpath, function(err, db) {
+				var users = db.collection('users');
+				var albums = db.collection('albums');
+				users.findOne({id:req.cookies.user},function(err,doc){
+					doc = removeUserAlbum(aid,doc);
+					users.update({id:req.cookies.user},{$set:doc},function(err,result){
+						albums.findOne({"id":aid},function(err,doc){
+							var gfs = Grid(db, mongo);
+							for(var k in doc.photos){
+								gfs.files.remove({'metadata.id': doc.photos[k]},function(){});
+							}
+							albums.remove({"id":aid},function(){
+								callback();
+							})
+						})
+					})
+				});
+			})
+		},
+		function(err){
+			res.send({'success':true});
+		}
+	);
+
+})
+
 function idGen(){
 	var id = "";
 	for(i=0;i<15;i++){
 		id = Math.floor((Math.random() * 1000000000000000));
 	}
 	return id;
+}
+
+function removeUserAlbum(aid,doc){
+	for(var k in doc.albums){
+		if(doc.albums[k].id == aid){
+			doc.albums.splice(k,1);
+			return doc;
+		}
+	}
+	return doc;
 }
