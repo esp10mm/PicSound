@@ -1,0 +1,129 @@
+body{
+  background-color: #dedede;
+  font-family: 'Varela Round', sans-serif;
+}
+
+.ui.main.menu{
+  top: 0px;
+  margin-top: 0px;
+  width: 100%;
+  left: 0px;
+  position: fixed;
+}
+
+.right.menu{
+  display: inline;
+}
+
+.ui.main.segment{
+  background-color: #dedede;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0px;
+  z-index: -1;
+}
+
+.ui.manage.segment{
+  width: 40%;
+  margin-top: 15px;
+  max-height: 90%;
+}
+
+.ui.slide.segment{
+  width: 59%;
+  margin-top: 15px;
+  height: 95%;
+  text-align:center;
+}
+
+.ui.slide.disp.segment{
+  width: 69%;
+  left: 15%;
+  height: 90%;
+}
+
+.ui.control.segment{
+  height: 8%;
+  margin-top: 0px;
+  padding-top:3px;
+  text-align:center;
+}
+
+.control.icon{
+  display:inline-block;
+  position: relative;
+}
+
+.ui.image{
+  display: block;
+  top: auto%;
+  margin: auto;
+}
+
+.ui.mini.button{
+  display: inline;
+}
+
+.ui.segment.tag{
+  padding-left:3px;
+}
+
+.ui.tag.label{
+  margin-top: 3px;
+}
+
+#tags{
+  margin-left:3px;
+  padding-left:0px;
+}
+
+.ui.segment.song{
+  padding-left:3px;
+}
+
+.ui.song_disp.segment{
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
+.ui.song.message{
+  width: 100%;
+}
+
+.ui.song.image{
+  float: left;
+  width: 80px;
+  height: 80px;
+  display: inline;
+  vertical-align: middle;
+  margin-right: 20px;
+}
+
+.song.content{
+  display: inline-block;
+  height: 80px;
+  vertical-align: middle;
+}
+
+.song.control{
+  float: right;
+  vertical-align: middle;
+  text-align: center;
+  z-index: 200;
+}
+
+.song.icon{
+  font-size: 3em;
+  vertical-align: middle;
+}
+
+.song.thumbs.icon{
+  font-size: 2em;
+  vertical-align: middle;
+}
+
+#songs{
+  margin-left:3px;
+  padding-left:0px;
+}

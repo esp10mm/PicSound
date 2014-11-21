@@ -1,0 +1,46 @@
+body{
+  background-color: #dedede;
+  font-family: 'Varela Round', sans-serif;
+}
+
+.ui.main.menu{
+  top: 0px;
+  margin-top: 0px;
+  width: 100%;
+  left: 0px;
+  position: fixed;
+}
+
+.right.menu{
+  display: inline;
+}
+
+.ui.main.segment{
+  background-color: #dedede;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0px;
+  z-index: -1;
+}
+
+.ui.side.menu{
+  left: 2%;
+  width: 13%;
+  margin-top: 15px;
+}
+
+.ui.disp.segment{
+  width: 86%;
+  margin-top: 15px;
+  max-height: 90%;
+}
+
+.ui.items{
+  max-height: 90%;
+}
+
+
+#fbloading{
+  display: inline;
+}
