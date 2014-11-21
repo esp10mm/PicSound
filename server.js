@@ -428,13 +428,12 @@ app.post('/albumUpload', function(req, res){
 
 app.post('/deleteAlbum',function(req,res){
 	var aids = req.body.aids;
-
-	async.each(aids,
-		function(aid,callback){
-			MongoClient.connect(dbpath, function(err, db) {
-				var users = db.collection('users');
-				var albums = db.collection('albums');
-				users.findOne({id:req.cookies.user},function(err,doc){
+	MongoClient.connect(dbpath, function(err, db) {
+		var users = db.collection('users');
+		var albums = db.collection('albums');
+		users.findOne({id:req.cookies.user},function(err,doc){
+			async.each(aids,
+				function(aid,callback){
 					doc = removeUserAlbum(aid,doc);
 					users.update({id:req.cookies.user},{$set:doc},function(err,result){
 						albums.findOne({"id":aid},function(err,doc){
@@ -447,13 +446,13 @@ app.post('/deleteAlbum',function(req,res){
 							})
 						})
 					})
-				});
-			})
-		},
-		function(err){
-			res.send({'success':true});
-		}
-	);
+				},
+				function(err){
+					res.send({'success':true});
+				}
+			);
+		});
+	})
 
 })
 
