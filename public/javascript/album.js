@@ -1,3 +1,4 @@
+var curTab = '0';
 //image num
 var loadCount = 0;
 
@@ -37,6 +38,13 @@ function init(){
   $('.manage .tag .button').popup({
     on: 'click',
   });
+
+  // $('#recInput').on('change',function(){
+  //   console.log('change');
+  //   $.get('http://api.spotify.com/v1/search?q=artist:%E8%94%A1%E4%BE%9D%E6%9E%97+track:%E5%91%B8&type=track',function(res){
+  //     console.log(res);
+  //   })
+  // })
 
   $(window).resize(function() {
     resetImgSize();
@@ -132,6 +140,8 @@ function deleteTag(k){
 }
 
 function loadSong(tags){
+  var loadingHTML = '<div class="ui active inline loader"></div>';
+  document.getElementById('songs').innerHTML = loadingHTML;
   $.get("/getRecSong",{id:albumID},function(res){
       songs = [];
       songNowPage = 1;
@@ -161,7 +171,8 @@ function loadSong(tags){
 
         }
         songHTML += "</div>"
-        document.getElementById('songs').innerHTML = songHTML;
+        // document.getElementById('songs').innerHTML = songHTML;
+        $('#songs').html(songHTML);
         $('.inactive').hide();
 
         var pageHTML = "<a class='icon item' dir='-1'><i class='left arrow icon'></i></a><a class='active pnum item page1'>1</a>";
@@ -246,7 +257,12 @@ function loadSong(tags){
         document.getElementById('songs').innerHTML = "<div class='ui icon message'> <i class='frown icon'></i> <div class='content'> <div class='header'> Sorry, no song for these tags yet ... </div> <p>Try to add other tag in left tag page !</p> </div> </div>";
         document.getElementById('song_page').innerHTML = "";
       }
+
+      if(curTab == '1'){
+        $('.tab1').slideDown();
+      }
   })
+
 }
 
 function newTag(){
