@@ -13,6 +13,9 @@ var songs = [];
 var nowPlaying = null;
 var songNowPage = 1;
 
+var rsongs = [];
+var rsongPlaying = null;
+
 function init(){
 
   loadPhotos();
@@ -39,12 +42,36 @@ function init(){
     on: 'click',
   });
 
-  // $('#recInput').on('change',function(){
-  //   console.log('change');
-  //   $.get('http://api.spotify.com/v1/search?q=artist:%E8%94%A1%E4%BE%9D%E6%9E%97+track:%E5%91%B8&type=track',function(res){
-  //     console.log(res);
-  //   })
-  // })
+  $('#recInput').on('change',function(){
+    if(rsongPlaying != null){
+      rsongs[rsongPlaying.attr('rsong')].pause();
+      rsongs = [];
+      rsongPlaying = null;
+    }
+    var keyword = $('#recInput').val();
+    $.get('http://api.spotify.com/v1/search?type=track&q=track:'+keyword,function(res){
+      var resultHTML = '';
+      console.log(res);
+      for(var k in res.tracks.items){
+        if(k > 3)
+          break;
+        var track = res.tracks.items[k];
+        console.log(track.name);
+        resultHTML +=
+          "<div class='ui song message'><img class='ui song image' src='" + track.album.images[1].url +
+          "'><div class='song content'><div class='header'>" + track.name +
+          "</div><p>" + track.artists[0].name+"</p></div><div class='song control'>"+
+          "<i class='song plus icon rsong"+k+"' onclick='addSong(\""+track.id+"\","+k+")'></i>" +
+          "<i class='song play icon rsong"+k+"' onclick='recommendSongPlay("+k+")' rsong="+k+"></i></div></div>";
+
+        var audioElement = document.createElement('audio');
+        audioElement.setAttribute('src',track.preview_url);
+        rsongs[k] = audioElement;
+      }
+      // resultHTML = "<div class='ui song message'></div>";
+      $('#recResult').html(resultHTML);
+    })
+  })
 
   $(window).resize(function() {
     resetImgSize();
@@ -140,8 +167,12 @@ function deleteTag(k){
 }
 
 function loadSong(tags){
-  var loadingHTML = '<div class="ui active inline loader"></div>';
+  var loadingHTML = "<i class='big loading icon'></i>";
   document.getElementById('songs').innerHTML = loadingHTML;
+  if(nowPlaying != null){
+    songs[nowPlaying.attr('song')].pause();
+    nowPlaying = null;
+  }
   $.get("/getRecSong",{id:albumID},function(res){
       songs = [];
       songNowPage = 1;
@@ -238,6 +269,12 @@ function loadSong(tags){
               return;
             }
           }
+          if(rsongPlaying != null){
+            rsongs[rsongPlaying.attr('rsong')].pause();
+            rsongPlaying
+              .removeClass('pause')
+              .addClass('play');
+          }
           var song = songs[$(this).attr('song')];
           nowPlaying = $(this);
           song.play();
@@ -274,6 +311,54 @@ function newTag(){
     });
   }
   $('.manage .tag .button').popup('hide');
+}
+
+function recommendSongPlay(index){
+  if(nowPlaying != null){
+    songs[nowPlaying.attr('song')].pause();
+    nowPlaying
+      .removeClass('pause')
+      .addClass('play');
+    nowPlaying = null;
+  }
+
+  if(rsongPlaying != null){
+    rsongs[rsongPlaying.attr('rsong')].pause();
+    rsongPlaying
+      .removeClass('pause')
+      .addClass('play');
+    if(rsongPlaying.attr('rsong') == index){
+      rsongPlaying = null;
+      console.log('self')
+      return;
+    }
+  }
+
+  rsongPlaying = $('.song.play.rsong'+index);
+  rsongPlaying
+    .removeClass('play')
+    .addClass('pause');
+  rsongs[index].play();
+
+  $.each(rsongs,function(){
+    $(this).on('ended',function(){
+      rsongPlaying.removeClass('pause').addClass('play');
+      rsongPlaying = null;
+    })
+  })
+}
+
+function addSong(sid,index){
+  $('.plus.icon.rsong'+index)
+    .removeClass('plus')
+    .addClass('loading')
+  $.get("/addRecSong",{aid:albumID,sid:sid},function(res){
+    console.log('add song success!')
+    $('.loading.icon.rsong'+index)
+      .removeClass('loading')
+      .addClass('checkmark')
+      .addClass('green')
+  })
 }
 
 function initSlide(){
