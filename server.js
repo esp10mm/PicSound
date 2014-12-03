@@ -279,9 +279,32 @@ app.get('/getRecSong',function(req,res){
 				}
 				res.send(results);
 			});
-
 		})
 	})
+})
+
+app.get('/addRecSong',function(req,res){
+	MongoClient.connect(dbpath, function(err, db){
+		var albums = db.collection('albums');
+		albums.findOne({id:req.query.aid},function(err,doc){
+			var tags = [];
+			if(!(doc.tags===undefined)){
+				tags = doc.tags;
+			}
+
+			var options = {
+				uri: engine + "addSong",
+				body: {tags:tags,sid:req.query.sid},
+				json: true
+			};
+
+			request.post(options,function(e,r,body){
+
+			});
+		})
+	})
+	// console.log(req.query.sid);
+	res.send({success:true});
 })
 
 app.get('/getAlbumList',function(req,res){
