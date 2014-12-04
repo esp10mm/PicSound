@@ -43,11 +43,15 @@ html
         div(class="ui inactive basic raised segment song tab1")
           div(class="ui basic song segment" id="songs")
           div(class="ui pagination song page menu" id="song_page")
+          | &nbsp; &nbsp; &nbsp;
+          div(class="ui icon button songRefresh")
+            i(class="refresh icon")
         //- recommending tab
         div(class="ui inactive basic raised segment recommend tab2")
-          div(class="ui icon input loading")
+          div(class="ui input")
             input(type="text" placeholder="Search Song ..." id="recInput")
-            i(class="inactive icon")
+          | &nbsp;
+          i(class="inactive big loading icon" id="songSearchLoading")
           div(class="ui basic segment" id="recResult")
       //- right side displaying segment
       div(class="ui secondary right floated stacked slide segment")

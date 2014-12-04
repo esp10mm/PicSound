@@ -43,6 +43,9 @@ function init(){
   });
 
   $('#recInput').on('change',function(){
+
+    $('#songSearchLoading').show();
+
     if(rsongPlaying != null){
       rsongs[rsongPlaying.attr('rsong')].pause();
       rsongs = [];
@@ -70,7 +73,12 @@ function init(){
       }
       // resultHTML = "<div class='ui song message'></div>";
       $('#recResult').html(resultHTML);
+      $('#songSearchLoading').hide();
     })
+  })
+
+  $('.button.songRefresh').click(function(){
+    loadSong();
   })
 
   $(window).resize(function() {
