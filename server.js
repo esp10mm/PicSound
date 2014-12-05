@@ -44,6 +44,10 @@ app.get('/albums',function(req,res){
 	MongoClient.connect(dbpath, function(err, db) {
 		var users = db.collection('users');
 		users.findOne({id:uid},function(err,doc){
+				if(doc == null){
+					res.redirect('/');
+					return;
+				}
 				var albums = [];
 				if(doc.albums != null)
 					albums = doc.albums;

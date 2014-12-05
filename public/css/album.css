@@ -104,11 +104,13 @@ body{
   display: inline-block;
   height: 80px;
   vertical-align: middle;
+  width:40%;
+  overflow: auto;
 }
 
 .song.control{
-  float: right;
-  vertical-align: middle;
+  display: block;
+  float:right;
   text-align: center;
   z-index: 200;
 }
