@@ -52,25 +52,33 @@ function init(){
       rsongPlaying = null;
     }
     var keyword = $('#recInput').val();
-    $.get('http://api.spotify.com/v1/search?type=track&q=track:'+keyword,function(res){
+    $.get('/spotifySearch?keyword='+keyword,function(res){
       var resultHTML = '';
       console.log(res);
       for(var k in res.tracks.items){
         if(k > 3)
           break;
         var track = res.tracks.items[k];
-        console.log(track.name);
+        // console.log(track.name);
         resultHTML +=
           "<div class='ui song message'><img class='ui song image' src='" + track.album.images[1].url +
           "'><div class='song content'><div class='header'>" + track.name +
           "</div><p>" + track.artists[0].name+"</p></div><div class='song control'>"+
-          "<i class='song plus icon rsong"+k+"' onclick='addSong(\""+track.id+"\","+k+")'></i>" +
-          "<i class='song play icon rsong"+k+"' onclick='recommendSongPlay("+k+")' rsong="+k+"></i></div></div>";
+          "<i class='rsong plus icon rsong"+k+"' onclick='addSong(\""+track.id+"\","+k+")'></i>" +
+          "<i class='rsong play icon rsong"+k+"' onclick='recommendSongPlay("+k+")' rsong="+k+"></i></div></div>";
 
         var audioElement = document.createElement('audio');
         audioElement.setAttribute('src',track.preview_url);
         rsongs[k] = audioElement;
       }
+
+      $.each(rsongs,function(){
+        $(this).on('ended',function(){
+          rsongPlaying.removeClass('pause').addClass('play');
+          rsongPlaying = null;
+        })
+      })
+      
       // resultHTML = "<div class='ui song message'></div>";
       $('#recResult').html(resultHTML);
       $('#songSearchLoading').hide();
@@ -198,7 +206,7 @@ function loadSong(tags){
             "</div><p>" + res[k].artist+"</p></div><div class='song control'>"+
             "<i class='song thumbs down outline icon' song='" + res[k].id +
             "'></i><i class='song thumbs up outline icon' song='" + res[k].id + "'></i><i class='song play icon' song="+k+"></i></div></div>";
-          console.log(res[k]);
+          // console.log(res[k]);
           var audioElement = document.createElement('audio');
           audioElement.setAttribute('src',res[k].preview);
           songs.push(audioElement);
@@ -342,18 +350,11 @@ function recommendSongPlay(index){
     }
   }
 
-  rsongPlaying = $('.song.play.rsong'+index);
+  rsongPlaying = $('.rsong.play.rsong'+index);
   rsongPlaying
     .removeClass('play')
     .addClass('pause');
   rsongs[index].play();
-
-  $.each(rsongs,function(){
-    $(this).on('ended',function(){
-      rsongPlaying.removeClass('pause').addClass('play');
-      rsongPlaying = null;
-    })
-  })
 }
 
 function addSong(sid,index){

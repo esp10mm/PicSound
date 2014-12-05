@@ -118,6 +118,11 @@ body{
   vertical-align: middle;
 }
 
+.rsong.icon{
+  font-size: 3em;
+  vertical-align: middle;
+}
+
 .song.thumbs.icon{
   font-size: 2em;
   vertical-align: middle;

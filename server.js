@@ -283,6 +283,13 @@ app.get('/getRecSong',function(req,res){
 	})
 })
 
+app.get('/spotifySearch',function(req,res){
+	request.get('http://api.spotify.com/v1/search?type=track&q=track:'+req.query.keyword,function(e,r,body){
+		body = JSON.parse(body);
+		res.send(body);
+	})
+})
+
 app.get('/addRecSong',function(req,res){
 	MongoClient.connect(dbpath, function(err, db){
 		var albums = db.collection('albums');
