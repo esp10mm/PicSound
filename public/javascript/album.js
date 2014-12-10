@@ -78,7 +78,7 @@ function init(){
           rsongPlaying = null;
         })
       })
-      
+
       // resultHTML = "<div class='ui song message'></div>";
       $('#recResult').html(resultHTML);
       $('#songSearchLoading').hide();
@@ -183,7 +183,7 @@ function deleteTag(k){
 }
 
 function loadSong(tags){
-  var loadingHTML = "<i class='big loading icon'></i>";
+  var loadingHTML = "<i class='big spinner loading icon'></i>";
   document.getElementById('songs').innerHTML = loadingHTML;
   if(nowPlaying != null){
     songs[nowPlaying.attr('song')].pause();

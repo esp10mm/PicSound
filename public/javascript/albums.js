@@ -24,11 +24,14 @@ function init(){
     document.getElementById("selected_file_text").innerHTML = f.files.length + ' file selected '
   };
 
+  $('.inactive').hide();
+
   $( "#uploadSubmit" ).click(function(){
     if($("#uploadTitle").val().length == 0)
       $(".uploadTitle.input").addClass("error");
     else{
       var formData = new FormData($("#uploadForm")[0]);
+      $('.loading.upload').show();
       $.ajax( {
         url: '/albumUpload',
         type: 'POST',
@@ -41,12 +44,11 @@ function init(){
             success_flag = true;
             document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
             document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='smile icon'></i>Succeeded !</div>";
-            document.getElementById('fbloading').innerHTML = "";
-
+            $('.loading.upload').hide();
             $('.msg.modal')
+              .modal('hide others')
               .modal('setting', 'transition', "horizontal flip")
               .modal('show')
-              .modal('hide others')
             ;
 
             loadAlbums();
@@ -56,13 +58,13 @@ function init(){
             success_flag = true;
             document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
             document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='frown icon'></i>"+res.error+"</div>";
-            document.getElementById('fbloading').innerHTML = "";
-
+            $('.loading.upload').hide();
             $('.msg.modal')
+              .modal('hide others')
               .modal('setting', 'transition', "horizontal flip")
               .modal('show')
-              .modal('hide others')
             ;
+
           }
         }
       });
@@ -82,7 +84,7 @@ function delMode(){
     .html(delHtml)
     .off('click',delMode);
 
-  $('.album.item').each(function(){
+  $('.album.card').each(function(){
     var albumHtml = $(this).html() +
       '<a class="ui corner label">' +
       '<i class="remove icon"></i></a>';
@@ -138,6 +140,7 @@ function importFromFBDisp(){
     loadFBAlbumOptions(function(){
       $('.ui.selection.fb.dropdown').dropdown();
       $('.importFB.modal')
+        .modal('hide others')
         .modal('setting', 'transition', "horizontal flip")
         .modal('show')
       ;
@@ -147,15 +150,15 @@ function importFromFBDisp(){
 
 function uploadDisp(){
   $('.upload.modal')
+    .modal('hide others')
     .modal('setting', 'transition', "horizontal flip")
     .modal('show')
-    .modal('hide others')
   ;
 }
 
 function importFromFB(){
   var selected = $('.ui.selection.dropdown.fb').dropdown('get value');
-  document.getElementById('fbloading').innerHTML = "<i class='big loading icon'></i>";
+  $('.loading.importFB').show();
   $.get("/importAlbum",{album:selected,token:token},function(res){
     var success_flag = false;
     setTimeout(
@@ -165,12 +168,12 @@ function importFromFB(){
             document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='frown icon'></i>Sorry ... something went wrong</div>";
 
             $('.msg.modal')
+              .modal('hide others')
               .modal('setting', 'transition', "horizontal flip")
               .modal('show')
-              .modal('hide others')
             ;
 
-            document.getElementById('fbloading').innerHTML = "";
+            $('.loading.importFB').hide();
         }
       }
       , 30000
@@ -180,12 +183,12 @@ function importFromFB(){
       success_flag = true;
       document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
       document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='smile icon'></i>Succeeded !</div>";
-      document.getElementById('fbloading').innerHTML = "";
+      $('.loading.importFB').hide();
 
       $('.msg.modal')
+        .modal('hide others')
         .modal('setting', 'transition', "horizontal flip")
         .modal('show')
-        .modal('hide others')
       ;
 
       loadAlbums();
@@ -195,12 +198,12 @@ function importFromFB(){
       success_flag = true;
       document.getElementById("msg_header").innerHTML = "Import Album From Facebook :";
       document.getElementById("msg_content").innerHTML = "<div class='ui center aligned header'><i class='frown icon'></i>"+res.error+"</div>";
-      document.getElementById('fbloading').innerHTML = "";
+      $('.loading.importFB').hide();
 
       $('.msg.modal')
+        .modal('hide others')
         .modal('setting', 'transition', "horizontal flip")
         .modal('show')
-        .modal('hide others')
       ;
     }
   });
@@ -208,13 +211,13 @@ function importFromFB(){
 
 function loadAlbums(){
   $.get("/getAlbumList",{id:uid},function(res){
-    var albumsHTML = "<div class='ui items'>";
+    var albumsHTML = "<div class='ui cards'>";
     if(res.length>0){
       for(var k in res){
         albumsHTML = albumsHTML +
-          "<div class='album item' url='/album?id=" + res[k].id + "' aid='" + res[k].id + "'>" +
-          "<div class='image'><img class='cover_photo' src='/image?id=" + res[k].cover_photo + "'></div>" +
-          "<div class='content'><div class='ui header'>" + res[k].name + "</div></div></div>";
+          "<div class='album card' aid='" + res[k].id + "'>" +
+          "<a class='image' href='/album?id="+ res[k].id +"'><img class='cover_photo' src='/image?id=" + res[k].cover_photo + "'></a>" +
+          "<div class='content'><a class='ui header' href='/album?id="+ res[k].id +"'>" + res[k].name + "</a></div></div>";
       }
       albumsHTML+= "</div>";
       document.getElementById('main_disp').innerHTML = albumsHTML;

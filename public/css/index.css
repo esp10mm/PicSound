@@ -1,0 +1,58 @@
+body{
+  background-color: #060606;
+  font-family: 'Varela Round', sans-serif;
+}
+
+.ui.main.menu{
+  top: 0px;
+  margin-top: 0px;
+  width: 100%;
+  left: 0px;
+  position: fixed;
+}
+
+.right.menu{
+  display: inline;
+}
+
+.ui.main.segment{
+  background-color: #060606;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0px;
+}
+
+.ui.welcome.image{
+  position: fixed;
+  right: 0px;
+  height: 100%;
+  width: auto;
+  z-index: -1;
+}
+
+.ui.signin.segment{
+  position:fixed;
+  left: 5%;
+  margin-top: 5%;
+}
+
+.ui.title.header{
+  font-size:75px;
+}
+
+.ui.welcome.header{
+  font-size:50px;
+}
+
+.text {
+  display: inline;
+}
+
+.ui.header{
+  font-family: 'Varela Round', sans-serif;
+}
+
+.facebook.button{
+  font-family: 'Varela Round', sans-serif;
+}

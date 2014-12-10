@@ -9,6 +9,7 @@ body{
   width: 100%;
   left: 0px;
   position: fixed;
+  z-index: 2;
 }
 
 .right.menu{
@@ -21,17 +22,18 @@ body{
   height: 100%;
   position: fixed;
   left: 0px;
-  z-index: -1;
 }
 
 .ui.manage.segment{
   width: 40%;
+  margin-right: 0px;
   margin-top: 15px;
   max-height: 90%;
 }
 
 .ui.slide.segment{
   width: 59%;
+  margin-left: 0px;
   margin-top: 15px;
   height: 95%;
   text-align:center;

@@ -9,6 +9,7 @@ body{
   width: 100%;
   left: 0px;
   position: fixed;
+  z-index: 2;
 }
 
 .right.menu{
@@ -21,7 +22,6 @@ body{
   height: 100%;
   position: fixed;
   left: 0px;
-  z-index: -1;
 }
 
 .ui.side.menu{
@@ -32,6 +32,7 @@ body{
 
 .ui.disp.segment{
   width: 86%;
+  margin: 0px;
   margin-top: 15px;
   max-height: 90%;
 }
@@ -43,4 +44,12 @@ body{
 
 #fbloading{
   display: inline;
+}
+
+.ui.header{
+  font-family: 'Varela Round', sans-serif;
+}
+
+.chooseFiles{
+  display: inline-block;
 }

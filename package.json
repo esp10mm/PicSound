@@ -9,6 +9,9 @@
     "jade" : "*" ,
     "mongodb" : "*" ,
     "gridfs-stream" : "*",
-    "cookie-parser" : "*"
+    "cookie-parser" : "*",
+    "util" : "*",
+    "formidable" : "*",
+    "body-parser" : "*"
   }
 }

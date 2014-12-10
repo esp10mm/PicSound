@@ -40,6 +40,7 @@ html
         a(class="item" id="delItem")
           i(class="trash icon")
           |Delete
+
       div(class="ui right floated stacked disp segment",id="main_disp")
 
       div(class="ui importFB modal")
@@ -56,7 +57,7 @@ html
           div(class="ui button" onclick="importFromFB()")
             |Import
           | &nbsp; &nbsp; &nbsp;
-          div(id="fbloading")
+          i(class="inactive big spinner loading icon importFB")
         div(class="actions")
           div(class="ui button")
             |Cancel
@@ -66,16 +67,18 @@ html
         i(class="close icon")
         div(class="header")
           |Upload photos :
-        div(class="content")
+        div(class="chooseFiles content")
           form(action="/albumUpload" enctype="multipart/form-data" method="post" id="uploadForm")
-            div(class="ui labeled uploadTitle input")
-              input(type="text" placeholder="Please enter album title" id="uploadTitle" name="title")
-              div(class="ui corner label")
-                i(class="asterisk icon")
-            | &nbsp; &nbsp; &nbsp;
-            label(for="file" class="ui icon button")
-              i(class="file icon")
-              |Open files
+            div(class="inline fields")
+              div(class="field")
+                div(class="ui uploadTitle input chooseFiles")
+                  input(type="text" placeholder="Please enter album title" id="uploadTitle" name="title")
+                | &nbsp; &nbsp; &nbsp;
+                label(for="file" class="ui icon button chooseFiles")
+                  i(class="file icon")
+                  |Open files
+                | &nbsp; &nbsp; &nbsp;
+                i(class="inactive big spinner loading icon upload")
             input(type="file" id="file" multiple="multiple" name="upload" style="display:none")
             br
             br
@@ -100,7 +103,7 @@ html
 
   div(id="userinfo" user=data.user.id)
 
-  script(src="//code.jquery.com/jquery-1.11.0.min.js" type="text/javascript")
+  script(src="javascript/jquery-1.11.1.min.js" type="text/javascript")
   script(src="javascript/semantic.js" type="text/javascript")
   script(src="javascript/albums.js" type="text/javascript")
   script.
