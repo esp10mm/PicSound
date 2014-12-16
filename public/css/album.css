@@ -25,42 +25,30 @@ body{
 }
 
 .ui.manage.segment{
-  width: 40%;
-  margin-right: 0px;
+  width: 100%;
   margin-top: 15px;
-  max-height: 90%;
 }
 
-.ui.slide.segment{
-  width: 59%;
-  margin-left: 0px;
+.ui.album.segment{
+  width: 100%;
   margin-top: 15px;
-  height: 95%;
-  text-align:center;
+  margin-bottom: 15px;
 }
 
-.ui.slide.disp.segment{
-  width: 69%;
-  left: 15%;
-  height: 90%;
+.ui.album.disp.segment{
+  overflow-y:scroll;
 }
 
-.ui.control.segment{
+/*.ui.control.segment{
   height: 8%;
   margin-top: 0px;
   padding-top:3px;
   text-align:center;
-}
+}*/
 
 .control.icon{
   display:inline-block;
   position: relative;
-}
-
-.ui.image{
-  display: block;
-  top: auto%;
-  margin: auto;
 }
 
 .ui.mini.button{
@@ -136,3 +124,8 @@ body{
   margin-left:3px;
   padding-left:0px;
 }
+
+/*.slidePic{
+  max-width:500px;
+  text-align:center;
+}*/

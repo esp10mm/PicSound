@@ -1,6 +1,4 @@
 var curTab = '0';
-//image num
-var loadCount = 0;
 
 //slide control var
 var slideCur = 0;
@@ -16,11 +14,16 @@ var songNowPage = 1;
 var rsongs = [];
 var rsongPlaying = null;
 
+var picLoadCount = 0;
+
 function init(){
 
-  loadPhotos();
-  loadTags();
+  // loadPhotos();
+  $('.stacked.album.segment').height($('.main.segment').height()-55);
+  $('.disp.album.segment').height($('.stacked.album.segment').height()-90);
+  loadAlbum();
 
+  loadTags();
   //hide inactive elements
   $('.inactive').hide();
 
@@ -93,7 +96,7 @@ function init(){
     resetImgSize();
   });
 
-  initSlide();
+  // initSlide();
 
 }
 
@@ -120,41 +123,78 @@ function resetImgSize(){
     });
 }
 
-function loadPhotos(){
-  slideLen = photos.length;
-  var slideHTML = ""
+// function loadPhotos(){
+//   slideLen = photos.length;
+//   var slideHTML = ""
+//   for(var k in photos){
+//     slideHTML = slideHTML + '<img class="ui image slide'+k+'" src="/image?id=' + photos[k] + '" style="display:none">'
+//   }
+//   document.getElementById('slide').innerHTML = slideHTML;
+//
+//   //resize images after they loaded
+//   $('.image').on('load',function(){
+//     var w = $(this).width()
+//     var h = $(this).height()
+//     $(this).attr('ow',w)
+//     $(this).attr('oh',h)
+//     var sw = $('.slide.disp').width()
+//     var sh = $('.slide.disp').height()
+//     var ratio = w/h
+//     if(w > sw){
+//       $(this).width(sw)
+//       $(this).height(sw/ratio)
+//       h = $(this).height()
+//     }
+//     if(h > sh){
+//       $(this).height(sh)
+//       $(this).width(sh*ratio)
+//     }
+//     var top = (sh - $(this).height())/2
+//     $(this).css('top',top+'px')
+//     if($(this).hasClass('slide0'))
+//       $(this).show()
+//     loadCount += 1
+//     if(loadCount == slideLen)
+//       $('.play.control').click()
+//   });
+// }
+
+function loadAlbum(){
+  var photosHTML = '<div class="ui cards">';
   for(var k in photos){
-    slideHTML = slideHTML + '<img class="ui image slide'+k+'" src="/image?id=' + photos[k] + '" style="display:none">'
+    photosHTML = photosHTML + '<div class="inactive card"><div class="image"><img src="/image?id=' + photos[k] +'"></div></div>';
   }
-  document.getElementById('slide').innerHTML = slideHTML;
+  photosHTML += '</div>'
+  $('.album.disp').html(photosHTML)
+  $('img').on('load',function(){
+    picLoadCount += 1;
+    if(picLoadCount == photos.length)
+      rerangeCards();
+  })
+}
 
-  //resize images after they loaded
-  $('.image').on('load',function(){
-    var w = $(this).width()
-    var h = $(this).height()
-    $(this).attr('ow',w)
-    $(this).attr('oh',h)
-    var sw = $('.slide.disp').width()
-    var sh = $('.slide.disp').height()
-    var ratio = w/h
-    if(w > sw){
-      $(this).width(sw)
-      $(this).height(sw/ratio)
-      h = $(this).height()
-    }
-    if(h > sh){
-      $(this).height(sh)
-      $(this).width(sh*ratio)
-    }
-    var top = (sh - $(this).height())/2
-    $(this).css('top',top+'px')
-    if($(this).hasClass('slide0'))
-      $(this).show()
-    loadCount += 1
-    if(loadCount == slideLen)
-      $('.play.control').click()
-  });
+function rerangeCards(){
+  var newCards = "";
+  $('.inactive.card').each(function(){
+    newCards += smallCard();
+  })
+  $('.cards').html(newCards);
+}
 
+function smallCard(){
+  var samll;
+  $('.inactive.card').each(function(){
+    if(samll === undefined){
+      samll = $(this);
+    }
+    else{
+      var dim = samll.width()*samll.height();
+      if($(this).height()*$(this).width() < dim)
+        samll = $(this)
+    }
+  })
+  samll.removeClass('inactive');
+  return('<div class="card">'+samll.html()+'</div>');
 }
 
 function loadTags(){
@@ -192,7 +232,7 @@ function loadSong(tags){
   $.get("/getRecSong",{id:albumID},function(res){
       songs = [];
       songNowPage = 1;
-      var songsMaxHeight = $('.stacked.slide.segment').height()-$('.tabular.menu').height();
+      var songsMaxHeight = $('.stacked.album.segment').height()-$('.tabular.menu').height();
       var page = 1;
 
       if(res.length > 0){
@@ -212,7 +252,7 @@ function loadSong(tags){
           songs.push(audioElement);
           if(songsMaxHeight <= 330 && k<res.length-1){
             page += 1;
-            songsMaxHeight = $('.stacked.slide.segment').height()-$('.tabular.menu').height();
+            songsMaxHeight = $('.stacked.album.segment').height()-$('.tabular.menu').height();
             songHTML += "</div><div class='ui inactive basic segment song_disp page"+page+"'>";
           }
 
