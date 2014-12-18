@@ -1,4 +1,4 @@
-var express = require('express');
+﻿var express = require('express');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -288,10 +288,20 @@ app.get('/getRecSong',function(req,res){
 })
 
 app.get('/spotifySearch',function(req,res){
-	request.get('http://api.spotify.com/v1/search?type=track&q=track:'+req.query.keyword,function(e,r,body){
-		body = JSON.parse(body);
-		res.send(body);
-	})
+	var headers = {
+    "user-agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/537.13+ (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
+	}
+	request.get(
+		{
+			"uri":"http://api.spotify.com/v1/search?type=track&q=track:"+encodeURI(req.query.keyword),
+			"encoding": null,
+			"headers":headers
+		},
+		function(e,r,body){
+			body = JSON.parse(body);
+			res.send(body);
+		}
+	)
 })
 
 app.get('/addRecSong',function(req,res){
