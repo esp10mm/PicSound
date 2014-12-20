@@ -51,7 +51,7 @@ html
             //- recommending tab
             div(class="ui inactive basic raised segment recommend tab2")
               div(class="ui input")
-                input(type="text" placeholder="Search Song ..." id="recInput")
+                input(type="text" placeholder="type some song name ..." id="recInput")
               | &nbsp;
               i(class="inactive big spinner loading icon" id="songSearchLoading")
               div(class="ui basic segment" id="recResult")
@@ -60,29 +60,11 @@ html
           div(class="ui secondary right floated stacked album segment")
             div(class= "ui album basic disp segment")
             div(class= "ui control basic segment")
-              //- i(class= "step backward big control icon")
-              //- i(class= "big control icon play")
-              //- i(class= "step forward big control icon")
-        //-       div(class="ui compact labeled icon album button")
-        //-         i(class="play icon")
-        //-         |Slideshow
-        //-
-        //- div(class="ui slide basic modal")
-        //-   div(class="slidePic")
-        //-     img(src="http://localhost/image?id=467105823364666")
-        //-     br
-        //-     div(class="ui button playShape")
-        //-       |PLAY
-          //- div(class="ui mm segment")
-            //- img(src="http://localhost/image?id=48139680176973")
-          //- div(class="ui shape")
-          //-   div(class="sides")
-          //-     div(class="side")
-          //-       img(src="http://localhost/image?id=467105823364666")
-          //-     div(class="active side")
-          //-       img(src="http://localhost/image?id=48139680176973")
-          //- div(class="ui button playShape")
-          //-   |play
+              div(class="ui compact labeled icon album button")
+                i(class="play icon")
+                |Slideshow
+
+        div(class="ui fullscreen slide basic modal")
 
 
     script(src="javascript/jquery-1.11.1.min.js" type="text/javascript")
@@ -94,14 +76,5 @@ html
 
       $( document ).ready(function(){
         init();
+        $('.ui.modal').modal();
       })
-
-      //- $(window).load(function(){
-      //-   $('.playShape.button').click(function(){
-      //-     $('.shape').shape('flip right');
-      //-   })
-      //-
-      //-   //- $('.shape').shape();
-      //-   $('.slide.modal').modal('attach events', '.slide.button', 'show')
-      //-   $('.ui.modal').modal();
-      //- })

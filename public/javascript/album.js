@@ -1,4 +1,9 @@
+//menu control var
 var curTab = '0';
+
+//album control var
+var picLoadCount = 0;
+var cards = [];
 
 //slide control var
 var slideCur = 0;
@@ -11,22 +16,21 @@ var songs = [];
 var nowPlaying = null;
 var songNowPage = 1;
 
+//recommending song var
 var rsongs = [];
 var rsongPlaying = null;
 
-var picLoadCount = 0;
-
 function init(){
 
-  // loadPhotos();
+  //load album
   $('.stacked.album.segment').height($('.main.segment').height()-55);
   $('.disp.album.segment').height($('.stacked.album.segment').height()-90);
   loadAlbum();
 
+  //load tags (song will be loaded after loadTags())
   loadTags();
-  //hide inactive elements
-  $('.inactive').hide();
 
+  //tab bar init
   $('.tabular .item').on('click',function(){
     curTab = $(this).attr('tab');
     $('.tab0, .tab1, .tab2')
@@ -45,6 +49,11 @@ function init(){
     on: 'click',
   });
 
+  $('.button.songRefresh').click(function(){
+    loadSong();
+  })
+
+  //recommending song init
   $('#recInput').on('change',function(){
 
     $('#songSearchLoading').show();
@@ -88,16 +97,14 @@ function init(){
     })
   })
 
-  $('.button.songRefresh').click(function(){
-    loadSong();
-  })
+  //hide inactive elements
+  $('.inactive').hide();
 
+  //else task
   $(window).resize(function() {
     resetImgSize();
   });
-
   // initSlide();
-
 }
 
 function resetImgSize(){
@@ -173,28 +180,116 @@ function loadAlbum(){
   })
 }
 
-function rerangeCards(){
-  var newCards = "";
-  $('.inactive.card').each(function(){
-    newCards += smallCard();
-  })
-  $('.cards').html(newCards);
-}
-
 function smallCard(){
-  var samll;
+  var small;
   $('.inactive.card').each(function(){
-    if(samll === undefined){
-      samll = $(this);
+    if(small === undefined){
+      small = $(this);
     }
     else{
-      var dim = samll.width()*samll.height();
+      var dim = small.width()*small.height();
       if($(this).height()*$(this).width() < dim)
-        samll = $(this)
+        small = $(this)
     }
   })
-  samll.removeClass('inactive');
-  return('<div class="card">'+samll.html()+'</div>');
+  small.removeClass('inactive');
+  return small
+}
+
+function rerangeCards(){
+  var newCards = "";
+  var k=0;
+  $('.inactive.card').each(function(){
+    small = smallCard()
+    newCards += '<div class="card" cid='+k+'>' + small.html() + '</div>';
+    k += 1;
+  })
+
+  $('.cards').html(newCards);
+
+  $('.card').each(function(){
+    cards.push($(this));
+    $(this).click(function(){
+      clickPic($(this).attr('cid'))
+    })
+  })
+
+  initSlide();
+
+}
+
+function clickPic(k){
+  if(k==slideLen)
+    k=0;
+  else if(k<0)
+    k=slideLen-1;
+  slideCur = k;
+  $('.slide.modal').modal('show');
+  $('.slide.image').hide();
+  $('.slide.image.p'+k).show();
+  $('.slide.image.p'+k).css('max-height',$('.slide.pic.disp').height());
+  var imgtop = 0.5*($('.slide.pic.disp').height()-$('.slide.image.p'+k).height());
+  $('.slide.image.p'+k).css('top',imgtop);
+}
+
+function initSlide(){
+
+  slideLen = cards.length;
+
+  var picHTML = "<div class='slide pic disp'>";
+  for(var k in cards){
+    picHTML += "<img class='ui centered slide image p"+k+"' src='"+cards[k].find('img').attr('src')+"' style='display:none;'>"
+  }
+  var controlHTML = '<div class="ui center aligned slide control basic segment"><div class="ui buttons"><div class="ui left labeled icon slide control button"><i class="left chevron icon"></i>Back</div><div class="ui slideplay control button"><i class="play icon"></i>Play</div><div class="ui button slide control exit"><i class="remove icon"></i>Exit</div><div class="ui right labeled icon slide control button"><i class="right chevron icon"></i>Forward</div></div></div>'
+  picHTML += "</div>";
+  $('.fullscreen.slide.modal').html(picHTML+controlHTML);
+  $('.slide.pic.disp').height($('.main.segment').height()*0.8);
+
+  $('.slide.control.exit').click(function(){
+    if(slidePlay){
+      clearTimeout(timer);
+      $('.slideplay.control').find('i').removeClass('stop').addClass('play');
+      slidePlay = false;
+    }
+    $('.slide.modal').modal('hide');
+  })
+
+  $('.left.slide.control').click(function(){
+    clickPic(parseInt(slideCur)-1);
+  })
+
+  $('.right.slide.control').click(function(){
+    clickPic(parseInt(slideCur)+1);
+  })
+
+  $('.slideplay.control').click(function(){
+    var icon = $(this).find('i');
+    if(slidePlay){
+      icon.removeClass('stop').addClass('play');
+      slidePlay = false;
+    }
+    else{
+      icon.removeClass('play').addClass('stop');
+      slidePlay = true;
+      playSlide();
+    }
+  })
+
+  $('.album.button').click(function(){
+    clickPic(slideCur);
+    $('.slideplay.control').click();
+  })
+}
+
+function playSlide(){
+  if(slidePlay){
+    timer = setTimeout(function(){
+      clickPic(parseInt(slideCur)+1)
+      playSlide();
+    },2000)
+  }
+  else
+    return;
 }
 
 function loadTags(){
@@ -408,76 +503,4 @@ function addSong(sid,index){
       .addClass('checkmark')
       .addClass('green')
   })
-}
-
-function initSlide(){
-  $('.forward.control').on('click',function(){
-    var sel,sel2;
-    if(slideCur < (slideLen-1)){
-      sel = ".slide" + slideCur;
-      sel2 = ".slide" + (slideCur+1);
-    }
-    else{
-      sel = ".slide" + (slideLen-1);
-      sel2 = ".slide0";
-      slideCur = -1;
-    }
-    $(sel).hide();
-    $(sel2).show();
-    slideCur += 1;
-  })
-
-  $('.backward.control').on('click',function(){
-    var sel,sel2;
-    if(slideCur == 0){
-      sel2 = ".slide0";
-      sel = ".slide" + (slideLen-1);
-      slideCur = slideLen;
-    }
-    else{
-      sel = ".slide" + (slideCur-1);
-      sel2 = ".slide" + slideCur;
-    }
-
-    $(sel2).hide();
-    $(sel).show();
-    slideCur -= 1;
-  })
-
-  $('.play.control').on('click',function(){
-      if(!slidePlay){
-        $(this).removeClass('play');
-        $(this).addClass('pause');
-        slidePlay = true;
-        playSlide();
-      }
-      else{
-        clearTimeout(timer);
-        $(this).removeClass('pause');
-        $(this).addClass('play');
-        slidePlay = false;
-      }
-  })
-}
-
-function playSlide(){
-  if(!slidePlay)
-    return;
-  timer = setTimeout(function(){
-    var sel,sel2;
-    if(slideCur < (slideLen-1)){
-      sel = ".slide" + slideCur;
-      sel2 = ".slide" + (slideCur+1);
-    }
-    else{
-      sel = ".slide" + (slideLen-1);
-      sel2 = ".slide0";
-      slideCur = -1;
-    }
-    $(sel).hide();
-    $(sel2).show();
-    slideCur += 1;
-
-    playSlide();
-  },2000)
 }
