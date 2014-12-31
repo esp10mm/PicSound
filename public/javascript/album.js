@@ -130,42 +130,6 @@ function resetImgSize(){
     });
 }
 
-// function loadPhotos(){
-//   slideLen = photos.length;
-//   var slideHTML = ""
-//   for(var k in photos){
-//     slideHTML = slideHTML + '<img class="ui image slide'+k+'" src="/image?id=' + photos[k] + '" style="display:none">'
-//   }
-//   document.getElementById('slide').innerHTML = slideHTML;
-//
-//   //resize images after they loaded
-//   $('.image').on('load',function(){
-//     var w = $(this).width()
-//     var h = $(this).height()
-//     $(this).attr('ow',w)
-//     $(this).attr('oh',h)
-//     var sw = $('.slide.disp').width()
-//     var sh = $('.slide.disp').height()
-//     var ratio = w/h
-//     if(w > sw){
-//       $(this).width(sw)
-//       $(this).height(sw/ratio)
-//       h = $(this).height()
-//     }
-//     if(h > sh){
-//       $(this).height(sh)
-//       $(this).width(sh*ratio)
-//     }
-//     var top = (sh - $(this).height())/2
-//     $(this).css('top',top+'px')
-//     if($(this).hasClass('slide0'))
-//       $(this).show()
-//     loadCount += 1
-//     if(loadCount == slideLen)
-//       $('.play.control').click()
-//   });
-// }
-
 function loadAlbum(){
   var photosHTML = '<div class="ui cards">';
   for(var k in photos){
@@ -224,7 +188,7 @@ function clickPic(k){
   else if(k<0)
     k=slideLen-1;
   slideCur = k;
-  $('.slide.modal').modal('show');
+  $('.slide.modal').modal('setting', 'closable', false).modal('show');
   $('.slide.image').hide();
   $('.slide.image.p'+k).show();
   $('.slide.image.p'+k).css('max-height',$('.slide.pic.disp').height());
