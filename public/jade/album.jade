@@ -53,8 +53,12 @@ html
               div(class="ui input")
                 input(type="text" placeholder="type some song name ..." id="recInput")
               | &nbsp;
+              div(class="ui icon button")
+                i(class="search icon")
+              | &nbsp;
               i(class="inactive big spinner loading icon" id="songSearchLoading")
-              div(class="ui basic segment" id="recResult")
+              div(class="inactive ui basic segment" id="recResult")
+              div(class="ui pagination rsong page menu" id="rsong_page")
         //- right album displaying segment
         div(class="nine wide column")
           div(class="ui secondary right floated stacked album segment")

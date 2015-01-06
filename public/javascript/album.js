@@ -19,6 +19,7 @@ var songNowPage = 1;
 //recommending song var
 var rsongs = [];
 var rsongPlaying = null;
+var rsongNowPage = 1;
 
 function init(){
 
@@ -28,6 +29,10 @@ function init(){
   loadAlbum();
 
   //load tags (song will be loaded after loadTags())
+  var manageMaxHeight = $('.main.segment').height()-55;
+  $('.floated.manage.segment').css('max-height',manageMaxHeight);
+  $('#songs').css('max-height',manageMaxHeight - 150);
+  $('#recResult').css('max-height',manageMaxHeight - 210);
   loadTags();
 
   //tab bar init
@@ -47,6 +52,10 @@ function init(){
 
   $('.manage .tag .button').popup({
     on: 'click',
+    onVisible: function(){
+      $('#newTag').focus();
+      $('#newTag').on('change',function(){newTag();})
+    }
   });
 
   $('.button.songRefresh').click(function(){
@@ -55,46 +64,7 @@ function init(){
 
   //recommending song init
   $('#recInput').on('change',function(){
-
-    $('#songSearchLoading').show();
-
-    if(rsongPlaying != null){
-      rsongs[rsongPlaying.attr('rsong')].pause();
-      rsongs = [];
-      rsongPlaying = null;
-    }
-    var keyword = $('#recInput').val();
-    $.get('/spotifySearch?keyword='+keyword,function(res){
-      var resultHTML = '';
-      console.log(res);
-      for(var k in res.tracks.items){
-        if(k > 3)
-          break;
-        var track = res.tracks.items[k];
-        // console.log(track.name);
-        resultHTML +=
-          "<div class='ui song message'><img class='ui song image' src='" + track.album.images[1].url +
-          "'><div class='song content'><div class='header'>" + track.name +
-          "</div><p>" + track.artists[0].name+"</p></div><div class='song control'>"+
-          "<i class='rsong plus icon rsong"+k+"' onclick='addSong(\""+track.id+"\","+k+")'></i>" +
-          "<i class='rsong play icon rsong"+k+"' onclick='recommendSongPlay("+k+")' rsong="+k+"></i></div></div>";
-
-        var audioElement = document.createElement('audio');
-        audioElement.setAttribute('src',track.preview_url);
-        rsongs[k] = audioElement;
-      }
-
-      $.each(rsongs,function(){
-        $(this).on('ended',function(){
-          rsongPlaying.removeClass('pause').addClass('play');
-          rsongPlaying = null;
-        })
-      })
-
-      // resultHTML = "<div class='ui song message'></div>";
-      $('#recResult').html(resultHTML);
-      $('#songSearchLoading').hide();
-    })
+    searchSong();
   })
 
   //hide inactive elements
@@ -291,14 +261,13 @@ function loadSong(tags){
   $.get("/getRecSong",{id:albumID},function(res){
       songs = [];
       songNowPage = 1;
-      var songsMaxHeight = $('.stacked.album.segment').height()-$('.tabular.menu').height();
       var page = 1;
 
       if(res.length > 0){
         var songHTML = "<div class='ui basic segment song_disp page1'>";
+        var songPerPage = 5;
+        var count = songPerPage;
         for(var k in res){
-          //console.log(songsMaxHeight);
-          songsMaxHeight -= 110;
           songHTML = songHTML +
             "<div class='ui song message'><img class='ui song image' src='" +res[k].image +
             "'><div class='song content'><div class='header'>" + res[k].name +
@@ -309,17 +278,17 @@ function loadSong(tags){
           var audioElement = document.createElement('audio');
           audioElement.setAttribute('src',res[k].preview);
           songs.push(audioElement);
-          if(songsMaxHeight <= 330 && k<res.length-1){
+          count -= 1;
+          if(count == 0 && k<res.length-1){
             page += 1;
-            songsMaxHeight = $('.stacked.album.segment').height()-$('.tabular.menu').height();
+            count = songPerPage;
             songHTML += "</div><div class='ui inactive basic segment song_disp page"+page+"'>";
           }
-
         }
         songHTML += "</div>"
         // document.getElementById('songs').innerHTML = songHTML;
         $('#songs').html(songHTML);
-        $('.inactive').hide();
+        $('.inactive.song_disp').hide();
 
         var pageHTML = "<a class='icon item' dir='-1'><i class='left arrow icon'></i></a><a class='active pnum item page1'>1</a>";
         for(var k = 2;k <= page;k++){
@@ -328,24 +297,23 @@ function loadSong(tags){
         pageHTML += "<a class='icon item' dir='1'><i class='right arrow icon'></i>";
         document.getElementById('song_page').innerHTML = pageHTML;
 
-        $('.page .pnum.item').click(function(){
+        $('.song.page .pnum.item').click(function(){
           if(songNowPage != $(this).text()){
-            $('.page .pnum.item').removeClass('active');
+            $('.song.page .pnum.item').removeClass('active');
             $(this).addClass('active');
-            $('.segment.page'+songNowPage).hide();
-            $('.segment.page'+$(this).text()).slideDown();
+            $('.segment.song_disp.page'+songNowPage).hide();
+            $('.segment.song_disp.page'+$(this).text()).slideDown();
             songNowPage = $(this).text();
           }
         })
 
-        $('.page .icon.item').click(function(){
-          console.log(page);
+        $('.song.page .icon.item').click(function(){
           var nextPage = parseInt(songNowPage) + parseInt($(this).attr('dir'));
           if(!(nextPage>page || nextPage<1)){
-            $('.page .pnum.item').removeClass('active');
-            $('.page .pnum.item.page'+nextPage).addClass('active');
-            $('.segment.page'+songNowPage).hide();
-            $('.segment.page'+nextPage).slideDown();
+            $('.song.page .pnum.item').removeClass('active');
+            $('.song.page .pnum.item.page'+nextPage).addClass('active');
+            $('.segment.song_disp.page'+songNowPage).hide();
+            $('.segment.song_disp.page'+nextPage).slideDown();
             songNowPage = nextPage;
           }
         })
@@ -426,6 +394,86 @@ function newTag(){
     });
   }
   $('.manage .tag .button').popup('hide');
+}
+
+function searchSong(){
+  $('#songSearchLoading').show();
+
+  if(rsongPlaying != null){
+    rsongs[rsongPlaying.attr('rsong')].pause();
+    rsongs = [];
+    rsongPlaying = null;
+  }
+
+  var keyword = $('#recInput').val();
+  $.get('/spotifySearch?keyword='+keyword,function(res){
+    var resultHTML = "<div class='ui basic segment rsong_disp page1'>";
+    var page = 1;
+    var songPerPage = 5;
+    var count = songPerPage;
+    rsongNowPage = 1;
+    for(var k in res.tracks.items){
+      var track = res.tracks.items[k];
+      resultHTML +=
+        "<div class='ui song message'><img class='ui song image' src='" + track.album.images[1].url +
+        "'><div class='song content'><div class='header'>" + track.name +
+        "</div><p>" + track.artists[0].name+"</p></div><div class='song control'>"+
+        "<i class='rsong plus icon rsong"+k+"' onclick='addSong(\""+track.id+"\","+k+")'></i>" +
+        "<i class='rsong play icon rsong"+k+"' onclick='recommendSongPlay("+k+")' rsong="+k+"></i></div></div>";
+
+      var audioElement = document.createElement('audio');
+      audioElement.setAttribute('src',track.preview_url);
+      rsongs[k] = audioElement;
+      count -= 1;
+      if(count == 0 && k<res.tracks.items.length-1){
+        page += 1;
+        count = songPerPage;
+        resultHTML += "</div><div class='ui inactive basic segment rsong_disp page"+page+"'>";
+      }
+    }
+    resultHTML += "</div>";
+    $('#recResult').html(resultHTML);
+    $('.inactive.rsong_disp').hide();
+
+    var pageHTML = "<a class='icon item' dir='-1'><i class='left arrow icon'></i></a><a class='active pnum item page1'>1</a>";
+    for(var k = 2;k <= page;k++){
+      pageHTML = pageHTML + "<a class='pnum item page"+k+"'>"+k+"</a>";
+    }
+    pageHTML += "<a class='icon item' dir='1'><i class='right arrow icon'></i>";
+    document.getElementById('rsong_page').innerHTML = pageHTML;
+
+    $('.rsong.page .pnum.item').click(function(){
+      if(rsongNowPage != $(this).text()){
+        $('.rsong.page .pnum.item').removeClass('active');
+        $(this).addClass('active');
+        $('.segment.rsong_disp.page'+rsongNowPage).hide();
+        $('.segment.rsong_disp.page'+$(this).text()).slideDown();
+        rsongNowPage = $(this).text();
+      }
+    })
+
+    $('.rsong.page .icon.item').click(function(){
+      var nextPage = parseInt(rsongNowPage) + parseInt($(this).attr('dir'));
+      if(!(nextPage>page || nextPage<1)){
+        $('.rsong.page .pnum.item').removeClass('active');
+        $('.rsong.page .pnum.item.page'+nextPage).addClass('active');
+        $('.segment.rsong_disp.page'+rsongNowPage).hide();
+        $('.segment.rsong_disp.page'+nextPage).slideDown();
+        rsongNowPage = nextPage;
+      }
+    })
+
+
+    $.each(rsongs,function(){
+      $(this).on('ended',function(){
+        rsongPlaying.removeClass('pause').addClass('play');
+        rsongPlaying = null;
+      })
+    })
+
+    $('#recResult').slideDown();
+    $('#songSearchLoading').hide();
+  })
 }
 
 function recommendSongPlay(index){

@@ -70,6 +70,11 @@ body{
   padding-top: 0px;
 }
 
+.ui.rsong_disp.segment{
+  margin-top: 0px;
+  padding-top: 0px;
+}
+
 .ui.song.message{
   width: 100%;
 }
@@ -116,4 +121,11 @@ body{
 #songs{
   margin-left:3px;
   padding-left:0px;
+  overflow-y:scroll;
+}
+
+#recResult{
+  margin-left:3px;
+  padding-left:0px;
+  overflow-y:scroll;
 }
